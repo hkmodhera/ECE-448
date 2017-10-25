@@ -1,20 +1,67 @@
 #!/usr/bin/env python
 import sys, os.path
 from random import sample
+import copy
 
 def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
+    # if assignment is complete, return
     if numEmptyCells == 0:
         return 0
 
+    # for marking all cells
     for (x, y) in genNextEmpty(matrix):
-        matrix[y][x] = 'X'
+        # matrix[y][x] = 'X'
+        pass
+
+    # check possible assignments for currentEmpty
+
+    for color in colorSet:  # sample(colorSet, len(colorSet))
+        # assign a potential value to test
+        test = copy.deepcopy(matrix)
+
+        x, y = currentEmpty
+        test[y][x] = color
+
+        # check if val is consistent with assignment given constraint
+
+        # Pipes can't intersect
+
+        # No zig zags
+        if numEmptyCells - 1 == 0:
+            for i in range(1, width-1):
+                for j in range(1, height-1):
+                    if (i, j) not in srcCells:
+                        adjColors = set()
+                        adjColors.add(test[i - 1][j])
+                        adjColors.add(test[i + 1][j])
+                        adjColors.add(test[i][j - 1])
+                        adjColors.add(test[i][j + 1])
+                        if len(adjColors) != 3:
+                            for t in test:
+                                print t
+                            print '\n'
+                            return -1
+                    else:
+                        adjColors = set()
+                        adjColors.add(test[i - 1][j])
+                        adjColors.add(test[i + 1][j])
+                        adjColors.add(test[i][j - 1])
+                        adjColors.add(test[i][j + 1])
+                        if len(adjColors) != 3:
+                            return -1
+
+        # if assignment is valid
+        if(1):
+            matrix[y][x] = color # color # add var = val to assignment
+            result = dumbBacktracking(matrix, colorSet, srcCells, findNextEmpty(matrix), numEmptyCells - 1)
+            if result != -1: return result
+            matrix[y][x] = '_' # remove var = val from assignment
+
+    return -1
+
+
 
     '''
-    # try each color in the colorset
-    for color in sample(colorSet, len(colorSet)):
-        x, y = currentEmpty
-        matrix[y][x] = color
-
         #print '\n'.join([''.join([col for col in row]) for row in matrix])
         #print '---------'
         result = dumbBacktracking(matrix, colorSet, srcCells, findNextEmpty(matrix), numEmptyCells-1)
