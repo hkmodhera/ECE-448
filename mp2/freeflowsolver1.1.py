@@ -5,7 +5,11 @@ from random import sample
 def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
     if numEmptyCells == 0:
         return 0
-    
+
+    for (x, y) in genNextEmpty(matrix):
+        matrix[y][x] = 'X'
+
+    '''
     # try each color in the colorset
     for color in sample(colorSet, len(colorSet)):
         x, y = currentEmpty
@@ -14,7 +18,7 @@ def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
         #print '\n'.join([''.join([col for col in row]) for row in matrix])
         #print '---------'
         result = dumbBacktracking(matrix, colorSet, srcCells, findNextEmpty(matrix), numEmptyCells-1)
-        
+
         # if our assignment met constraints and this still satisfies them, we backtrack check
         if result == 0:
             adjCounter = 0
@@ -26,17 +30,17 @@ def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
                 adjCounter += 1
             if y+1 < height and matrix[y+1][x] == color:
                 adjCounter += 1
-        
+
             if (adjCounter == 2 and (x, y) not in srcCells) or (adjCounter == 1 and (x, y) in srcCells):
                 return 0
-          
+
         # if current color does not work, clear everything
         # from this position to the end of the matrix and try
-        # a new color 
+        # a new color
         for i in range(y*width+x, width*height):
             if (i%width, int(i/width)) not in srcCells:
                matrix[int(i/width)][i%width] = '_'
-
+    '''
     return -1
 
 # find the next empty space in the matrix
@@ -46,7 +50,14 @@ def findNextEmpty(matrix):
         for col in range(0, width):
             if matrix[row][col] == '_':
                 return (col, row)
-    return (0,0)
+    return (0, 0)
+
+# generate next empty space
+def genNextEmpty(matrix):
+    for row in range(0, height):
+        for col in range(0, width):
+            if matrix[row][col] == '_':
+                yield (col, row)
 
 def smartBacktracking():
     return
@@ -55,7 +66,7 @@ def main():
     if not os.path.exists(sys.argv[1]):
         print 'Input file does not exist'
         sys.exit(1)
-  
+
     # parse input flow free as 2D char matrix
     global width, height
 
@@ -84,6 +95,6 @@ def main():
         print 'No solution to Flow Free puzzle was found!'
 
     print '\n'.join([''.join([col for col in row]) for row in matrix])
-  
+
 if __name__ == "__main__":
     main()
