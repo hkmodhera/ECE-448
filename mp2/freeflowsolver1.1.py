@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import sys, os.path
 from random import sample
+from Queue import PriorityQueue
+from collections import deque
 
 count = 0
 
@@ -19,6 +21,14 @@ def findNextEmpty(matrix):
             if matrix[row][col] == '_':
                 return (col, row)
     return (0, 0)
+
+# choose val that rules out fewest vals in remaining variables
+def leastConstrainingVal():
+    return
+
+# choose location with fewest legal values
+def mostConstrainedVar():
+    return
 
 
 # ----------- BACKTRACKING FUNCTIONS ----------------- #
@@ -40,7 +50,8 @@ def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
 
         result = dumbBacktracking(matrix, colorSet, srcCells, findNextEmpty(matrix), numEmptyCells-1)
 
-        # if our assignment met constraints and this still satisfies them, we backtrack check
+        # if our assignment met constraints and this still satisfies them, we
+        # backtrack check
         if result == 0:
             adjCounter = 0
             if x-1 >= 0 and matrix[y][x-1] == color:
@@ -62,8 +73,59 @@ def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
 
     return -1
 
-def smartBacktracking():
-    return
+
+def smartBacktracking(matrix, colorOptions, srcCells, numEmptyCells):
+    global count
+
+    if numEmptyCells == 0:
+        return 0
+
+    colorOptions = sorted(colorOptions)
+    colorSetLen, colorSet, currentEmpty = colorOptions[0]
+
+    # # try each color in the colorset
+    #     # choose least constraining val
+
+    # try each color in the colorset
+    for color in sample(colorSet, len(colorSet)):
+        x, y = currentEmpty
+        matrix[y][x] = color
+        count += 1
+
+        # print '\n'.join([''.join([col for col in row]) for row in matrix])
+        # print '---------'
+
+        # FORWARD CHECKING
+        # Idea is to terminate search when no valid color assignments exists
+        # most constrained var: choose location with fewest legal values
+        # least constraining val: choose val that rules out fewest vals in
+        # remaining variables
+
+        #
+
+        result = smartBacktracking(matrix, colorOptions, srcCells, numEmptyCells-1)
+
+        # if our assignment met constraints and this still satisfies them, we
+        # backtrack check
+        if result == 0:
+            adjCounter = 0
+            if x-1 >= 0 and matrix[y][x-1] == color:
+                adjCounter += 1
+            if y-1 >=0 and matrix[y-1][x] == color:
+                adjCounter += 1
+            if x+1 < width and matrix[y][x+1] == color:
+                adjCounter += 1
+            if y+1 < height and matrix[y+1][x] == color:
+                adjCounter += 1
+
+            if (adjCounter == 2 and (x, y) not in srcCells) or (adjCounter == 1 and (x, y) in srcCells):
+                return 0
+
+        # if current color does not work, clear everything from this position to
+        # the end of the matrix and try a new color
+        resetGrid(matrix, srcCells, x, y)
+
+    return -1
 
 def main():
     global count
@@ -92,6 +154,7 @@ def main():
                 colors.add(cell)
                 endpts.add((x, y))
 
+    colors = sorted(colors)
 
     # -- replace the dumb algorithm with smart algorithm here --
     # initial call to the recursive backtracking
@@ -101,9 +164,10 @@ def main():
 
     # print '\n'.join([''.join([col for col in row]) for row in matrix])
 
+    '''
     sum = 0
     max = 0
-    iters = 1000
+    iters = 1
     for i in range(iters):
         count = 0
         if dumbBacktracking(matrix, colors, endpts, findNextEmpty(
@@ -120,7 +184,26 @@ def main():
     sum /= iters
     print 'avg iterations: ' + str(sum)
     print 'max iterations: ' + str(max)
+    '''
 
+    # -------------------- SMART ALGO ------------------------
+    pqueue = PriorityQueue()
+    colorOptions = []
+
+    # init priority queue with possible colors for each non source cell
+    # len of color choices, set of colors, (x, y)
+    for i in range(width):
+        for j in range(height):
+            if (i, j) not in endpts:
+                pqueue.put((len(colors), colors, (i, j)))
+                colorOptions.append((len(colors), colors, (i, j)))
+
+    # print pqueue.queue
+
+    if smartBacktracking(matrix, colorOptions, endpts, width*height-len(endpts)) == -1:
+        print 'No solution to Flow Free puzzle was found!'
+
+    print '\n'.join([''.join([col for col in row]) for row in matrix])
 
 if __name__ == "__main__":
     main()
