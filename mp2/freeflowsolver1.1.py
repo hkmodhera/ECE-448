@@ -53,18 +53,32 @@ def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
         # if our assignment met constraints and this still satisfies them, we
         # backtrack check
         if result == 0:
-            adjCounter = 0
-            if x-1 >= 0 and matrix[y][x-1] == color:
-                adjCounter += 1
-            if y-1 >=0 and matrix[y-1][x] == color:
-                adjCounter += 1
-            if x+1 < width and matrix[y][x+1] == color:
-                adjCounter += 1
-            if y+1 < height and matrix[y+1][x] == color:
-                adjCounter += 1
+            errorCnt = 0
+            for i in range(width):
+                for j in range(height):
+                    adjCounter = 0
+                    if i-1 >= 0 and matrix[j][i-1] == matrix[j][i]:
+                        adjCounter += 1
+                    if j-1 >=0 and matrix[j-1][i] == matrix[j][i]:
+                        adjCounter += 1
+                    if i+1 < width and matrix[j][i+1] == matrix[j][i]:
+                        adjCounter += 1
+                    if j+1 < height and matrix[j+1][i] == matrix[j][i]:
+                        adjCounter += 1
 
-            if (adjCounter == 2 and (x, y) not in srcCells) or (adjCounter == 1 and (x, y) in srcCells):
-                return 0
+                    print i, j, matrix[j][i], adjCounter
+                    for l in matrix: print l
+                    print '\n'
+
+                    if (adjCounter != 2 and (i, j) not in srcCells) or (adjCounter != 1 and (i, j) in srcCells):
+                        errorCnt += 1
+
+                    if errorCnt != 0: break
+
+                    # problem: arbitrarily resetting grid
+                    # need to test adj constraint in the order we set them in
+
+            if errorCnt == 0: return 0
 
         # if current color does not work, clear everything
         # from this position to the end of the matrix and try
@@ -82,6 +96,7 @@ def smartBacktracking(matrix, colorOptions, srcCells, numEmptyCells):
 
     colorOptions = sorted(colorOptions)
     colorSetLen, colorSet, currentEmpty = colorOptions[0]
+    print colorSetLen, colorSet, currentEmpty
 
     # # try each color in the colorset
     #     # choose least constraining val
@@ -91,6 +106,10 @@ def smartBacktracking(matrix, colorOptions, srcCells, numEmptyCells):
         x, y = currentEmpty
         matrix[y][x] = color
         count += 1
+
+        print color
+        for l in matrix: print l
+        print '\n'
 
         # print '\n'.join([''.join([col for col in row]) for row in matrix])
         # print '---------'
@@ -108,18 +127,24 @@ def smartBacktracking(matrix, colorOptions, srcCells, numEmptyCells):
         # if our assignment met constraints and this still satisfies them, we
         # backtrack check
         if result == 0:
-            adjCounter = 0
-            if x-1 >= 0 and matrix[y][x-1] == color:
-                adjCounter += 1
-            if y-1 >=0 and matrix[y-1][x] == color:
-                adjCounter += 1
-            if x+1 < width and matrix[y][x+1] == color:
-                adjCounter += 1
-            if y+1 < height and matrix[y+1][x] == color:
-                adjCounter += 1
+            errorCnt = 0
+            for i in range(width):
+                for j in range(height):
+                    adjCounter = 0
+                    if i - 1 >= 0 and matrix[j][i - 1] == matrix[j][i]:
+                        adjCounter += 1
+                    if j - 1 >= 0 and matrix[j - 1][i] == matrix[j][i]:
+                        adjCounter += 1
+                    if i + 1 < width and matrix[j][i + 1] == matrix[j][i]:
+                        adjCounter += 1
+                    if j + 1 < height and matrix[j + 1][i] == matrix[j][i]:
+                        adjCounter += 1
 
-            if (adjCounter == 2 and (x, y) not in srcCells) or (adjCounter == 1 and (x, y) in srcCells):
-                return 0
+                    if (adjCounter != 2 and (i, j) not in srcCells) or (adjCounter != 1 and (i, j) in srcCells):
+                        errorCnt += 1
+
+                    if errorCnt != 0:
+                        break
 
         # if current color does not work, clear everything from this position to
         # the end of the matrix and try a new color
@@ -186,7 +211,7 @@ def main():
     print 'max iterations: ' + str(max)
     '''
 
-    # -------------------- SMART ALGO ------------------------
+    # -------------------- SMART ALGO ------------------------ #
     pqueue = PriorityQueue()
     colorOptions = []
 
@@ -199,6 +224,11 @@ def main():
                 colorOptions.append((len(colors), colors, (i, j)))
 
     # print pqueue.queue
+
+    # -------------------- COMPUTE ASSIGNMENT ---------------- #
+
+    # if dumbBacktracking(matrix, colors, endpts, findNextEmpty(matrix), width*height-len(endpts)) == -1:
+    #     print 'No solution to Flow Free puzzle was found!'
 
     if smartBacktracking(matrix, colorOptions, endpts, width*height-len(endpts)) == -1:
         print 'No solution to Flow Free puzzle was found!'
