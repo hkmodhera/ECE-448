@@ -27,28 +27,35 @@ def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
         # Pipes can't intersect
 
         # No zig zags
-        if numEmptyCells - 1 == 0:
-            for i in range(1, width-1):
-                for j in range(1, height-1):
-                    if (i, j) not in srcCells:
-                        adjColors = set()
-                        adjColors.add(test[i - 1][j])
-                        adjColors.add(test[i + 1][j])
-                        adjColors.add(test[i][j - 1])
-                        adjColors.add(test[i][j + 1])
-                        if len(adjColors) != 3:
-                            for t in test:
-                                print t
-                            print '\n'
+        # if numEmptyCells - 1 == 0:
+        for i in range(1, width-1):
+            for j in range(1, height-1):
+                if (i, j) not in srcCells:
+                    adjColorSet = set() # num of unique adj colors
+                    adjColorList = [] # total num of adj colors
+                    for m, n in [(i - 1, j), (i + 1, j), (i, j - 1), (i, j + 1)]:
+                        print m, n
+                        if test[m][n] != '_':
+                            adjColorSet.add(test[m][n])
+                            adjColorList.append(test[m][n])
+
+                    ''' if test[i - 1][j] != '_': adjColors.add(test[i - 1][j])
+                    if test[i + 1][j] != '_': adjColors.add(test[i + 1][j])
+                    if test[i][j - 1] != '_': adjColors.add(test[i][j - 1])
+                    if test[i][j + 1] != '_': adjColors.add(test[i][j + 1]) '''
+
+                    if len(adjColorList) >= 2:
+                        if len(adjColorSet) != (len(adjColorList) - 1):
                             return -1
-                    else:
-                        adjColors = set()
-                        adjColors.add(test[i - 1][j])
-                        adjColors.add(test[i + 1][j])
-                        adjColors.add(test[i][j - 1])
-                        adjColors.add(test[i][j + 1])
-                        if len(adjColors) != 3:
-                            return -1
+
+                ''' else:
+                    adjColors = set()
+                    adjColors.add(test[i - 1][j])
+                    adjColors.add(test[i + 1][j])
+                    adjColors.add(test[i][j - 1])
+                    adjColors.add(test[i][j + 1])
+                    if len(adjColors) <= 3:
+                        return -1 '''
 
         # if assignment is valid
         if(1):
@@ -56,6 +63,8 @@ def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
             result = dumbBacktracking(matrix, colorSet, srcCells, findNextEmpty(matrix), numEmptyCells - 1)
             if result != -1: return result
             matrix[y][x] = '_' # remove var = val from assignment
+
+
 
     return -1
 
