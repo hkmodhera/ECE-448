@@ -3,6 +3,7 @@ import sys, os.path
 from random import sample
 from Queue import PriorityQueue
 from collections import deque
+import copy
 
 count = 0
 
@@ -41,6 +42,7 @@ def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
 
     # try each color in the colorset
     for color in sample(colorSet, len(colorSet)):
+        temp = copy.deepcopy(matrix)
         x, y = currentEmpty
         matrix[y][x] = color
         count += 1
@@ -83,7 +85,8 @@ def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
         # if current color does not work, clear everything
         # from this position to the end of the matrix and try
         # a new color
-        resetGrid(matrix, srcCells, x, y)
+        matrix = copy.deepcopy(temp)
+        # resetGrid(matrix, srcCells, x, y)
 
     return -1
 
@@ -98,18 +101,18 @@ def smartBacktracking(matrix, colorOptions, srcCells, numEmptyCells):
     colorSetLen, colorSet, currentEmpty = colorOptions[0]
     print colorSetLen, colorSet, currentEmpty
 
+    tmpColors = copy.deepcopy(colorOptions)
+    colorOptions.remove((colorSetLen, colorSet, currentEmpty))
+
     # # try each color in the colorset
     #     # choose least constraining val
 
     # try each color in the colorset
     for color in sample(colorSet, len(colorSet)):
+        tmpMatrix = copy.deepcopy(matrix)
         x, y = currentEmpty
         matrix[y][x] = color
         count += 1
-
-        print color
-        for l in matrix: print l
-        print '\n'
 
         # print '\n'.join([''.join([col for col in row]) for row in matrix])
         # print '---------'
@@ -143,12 +146,13 @@ def smartBacktracking(matrix, colorOptions, srcCells, numEmptyCells):
                     if (adjCounter != 2 and (i, j) not in srcCells) or (adjCounter != 1 and (i, j) in srcCells):
                         errorCnt += 1
 
-                    if errorCnt != 0:
-                        break
+                    if errorCnt == 0: return
 
         # if current color does not work, clear everything from this position to
         # the end of the matrix and try a new color
-        resetGrid(matrix, srcCells, x, y)
+        matrix = copy.deepcopy(tmpMatrix)
+        colorOptions = copy.deepcopy(tmpColors)
+        # resetGrid(matrix, srcCells, x, y)
 
     return -1
 
