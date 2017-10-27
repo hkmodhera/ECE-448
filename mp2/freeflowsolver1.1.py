@@ -42,7 +42,7 @@ def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
 
     # try each color in the colorset
     for color in sample(colorSet, len(colorSet)):
-        temp = copy.deepcopy(matrix)
+        # temp = copy.deepcopy(matrix)
         x, y = currentEmpty
         matrix[y][x] = color
         count += 1
@@ -68,9 +68,9 @@ def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
                     if j+1 < height and matrix[j+1][i] == matrix[j][i]:
                         adjCounter += 1
 
-                    print i, j, matrix[j][i], adjCounter
-                    for l in matrix: print l
-                    print '\n'
+                    # print i, j, matrix[j][i], adjCounter
+                    # for l in matrix: print l
+                    # print '\n'
 
                     if (adjCounter != 2 and (i, j) not in srcCells) or (adjCounter != 1 and (i, j) in srcCells):
                         errorCnt += 1
@@ -82,11 +82,10 @@ def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
 
             if errorCnt == 0: return 0
 
-        # if current color does not work, clear everything
-        # from this position to the end of the matrix and try
-        # a new color
-        matrix = copy.deepcopy(temp)
+        # if current color does not work, clear everything from this position to
+        # the end of the matrix and try a new color
         # resetGrid(matrix, srcCells, x, y)
+        matrix[y][x] = '_'
 
     return -1
 
@@ -94,28 +93,41 @@ def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
 def smartBacktracking(matrix, colorOptions, srcCells, numEmptyCells):
     global count
 
+    # check if assignment is complete
     if numEmptyCells == 0:
         return 0
 
+    # assign value to cell with fewest options
     colorOptions = sorted(colorOptions)
     colorSetLen, colorSet, currentEmpty = colorOptions[0]
-    print colorSetLen, colorSet, currentEmpty
+    # print colorSetLen, colorSet, currentEmpty
 
-    tmpColors = copy.deepcopy(colorOptions)
-    colorOptions.remove((colorSetLen, colorSet, currentEmpty))
+    # copy matrix and color options (to be reset upon failure)
+    # tmpMatrix = copy.deepcopy(matrix)
+    # tmpColors = copy.deepcopy(colorOptions)
 
-    # # try each color in the colorset
-    #     # choose least constraining val
+    # colorOptions.remove((colorSetLen, colorSet, currentEmpty))
+    newColorOptions = copy.deepcopy(colorOptions)
+    newColorOptions.remove((colorSetLen, colorSet, currentEmpty))
 
     # try each color in the colorset
-    for color in sample(colorSet, len(colorSet)):
-        tmpMatrix = copy.deepcopy(matrix)
+    for color in colorSet: # sample(colorSet, len(colorSet)):
+        '''
+        for l in matrix: print l
+        print '\n'
+        '''
         x, y = currentEmpty
         matrix[y][x] = color
+        # tmpColors = copy.deepcopy(colorOptions)
+        # print color, colorOptions
+        # print '--------'
+        # colorOptions.remove((colorSetLen, colorSet, currentEmpty))
+        # print colorOptions
+        # print '\n'
         count += 1
 
-        # print '\n'.join([''.join([col for col in row]) for row in matrix])
-        # print '---------'
+        print '\n'.join([''.join([col for col in row]) for row in matrix])
+        print '---------'
 
         # FORWARD CHECKING
         # Idea is to terminate search when no valid color assignments exists
@@ -123,37 +135,49 @@ def smartBacktracking(matrix, colorOptions, srcCells, numEmptyCells):
         # least constraining val: choose val that rules out fewest vals in
         # remaining variables
 
-        #
+        # TODO: check adj for all cells & reduce colorSet in colorOptions accordingly
 
-        result = smartBacktracking(matrix, colorOptions, srcCells, numEmptyCells-1)
+        # newColorOptions = (colorSetLen - 1, colorSet.remove(color), (x, y))
+        # oldColorOptions = (colorSetLen, colorSet, currentEmpty)
+        # colorOptions.remove((colorSetLen, colorSet, currentEmpty))
+
+        result = smartBacktracking(matrix, newColorOptions, srcCells, numEmptyCells-1)
 
         # if our assignment met constraints and this still satisfies them, we
         # backtrack check
         if result == 0:
             errorCnt = 0
-            for i in range(width):
-                for j in range(height):
-                    adjCounter = 0
-                    if i - 1 >= 0 and matrix[j][i - 1] == matrix[j][i]:
-                        adjCounter += 1
-                    if j - 1 >= 0 and matrix[j - 1][i] == matrix[j][i]:
-                        adjCounter += 1
-                    if i + 1 < width and matrix[j][i + 1] == matrix[j][i]:
-                        adjCounter += 1
-                    if j + 1 < height and matrix[j + 1][i] == matrix[j][i]:
-                        adjCounter += 1
+            # for i in range(width):
+            #     for j in range(height):
+            adjCounter = 0
+            if x - 1 >= 0 and matrix[y][x - 1] == matrix[y][x]:
+                adjCounter += 1
+            if y - 1 >= 0 and matrix[y - 1][x] == matrix[y][x]:
+                adjCounter += 1
+            if x + 1 < width and matrix[y][x + 1] == matrix[y][x]:
+                adjCounter += 1
+            if y + 1 < height and matrix[y + 1][x] == matrix[y][x]:
+                adjCounter += 1
 
-                    if (adjCounter != 2 and (i, j) not in srcCells) or (adjCounter != 1 and (i, j) in srcCells):
-                        errorCnt += 1
+            if (adjCounter != 2 and (x, y) not in srcCells) or (adjCounter != 1 and (x, y) in srcCells):
+                errorCnt += 1
 
-                    if errorCnt == 0: return
+            # if errorCnt != 0: break
+
+            if errorCnt == 0: return
 
         # if current color does not work, clear everything from this position to
         # the end of the matrix and try a new color
-        matrix = copy.deepcopy(tmpMatrix)
-        colorOptions = copy.deepcopy(tmpColors)
+        # matrix = copy.deepcopy(tmpMatrix)
+        matrix[y][x] = '_'
+        # print '--------------'
+        # print colorSet, color, colorOptions
+        # colorOptions.append((len(colorSet), colorSet, currentEmpty))
+        # colorOptions = copy.deepcopy(tmpColors)
         # resetGrid(matrix, srcCells, x, y)
 
+    # colorOptions.append(newColorOptions)
+    # colorOptions.append((len(colorSet), colorSet, currentEmpty))
     return -1
 
 def main():
