@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 import sys, os.path
 from random import sample
-
-count = 0
+from Queue import PriorityQueue
 
 # ----------- HELPER FUNCTIONS ----------------------- #
 
@@ -24,8 +23,6 @@ def findNextEmpty(matrix):
 # ----------- BACKTRACKING FUNCTIONS ----------------- #
 
 def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
-    global count
-
     if numEmptyCells == 0:
         return 0
 
@@ -62,17 +59,70 @@ def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
 
     return -1
 
-def smartBacktracking():
-    return
+def smartBacktracking(matrix, colorOptions):
+    # if our priority queue has no variable left to assign, the puzzle must be solved
+    if colorOptions.empty():
+        return True
+
+    mostConstVar = colorOptions.get()
+    varDomain = list(mostConstVar[0])    #deep copy of the possible colors for (varX, varY) cell
+    varX, varY = mostConstVar[1:]
+    
+    # if there's no color left to choose, then we clearly hit a dead end
+    while varDomain:
+        pickColor = varDomain.pop()
+    
+        # gather information on adjacent cells of current
+        emptyNeighbors = []
+        sameColorNeighborCt = 0
+        if varX-1 >= 0:
+            if matrix[varY][varX-1] == '_': 
+                emptyNeighbors.append((varX-1, varY))
+            elif matrix[varY][varX-1] == pickColor: 
+                sameColorNeighborCt += 1
+            # else NOT pickColor (do nothing here)
+        if varY-1 >=0:
+            if matrix[varY-1][varX] == '_': 
+                emptyNeighbors.append((varX, varY-1))
+            elif matrix[varY-1][varX] == pickColor: 
+                sameColorNeighborCt += 1
+        if x+1 < width:
+             if matrix[varY][varX+1] == '_': 
+                emptyNeighbors.append((varX+1, varY))
+            elif matrix[varY][varX+1] == pickColor: 
+                sameColorNeighborCt += 1
+        if y+1 < height 
+            if matrix[varY+1][varX] == '_': 
+                emptyNeighbors.append((varX, varY+1))
+            elif matrix[varY+1][varX] == pickColor: 
+                sameColorNeighborCt += 1
+
+        # perform CSP checks for the chosen color
+        if len(emptyNeighbors) == 0 and sameColorNeighborCt != 2:
+            # choose another color; this one doesn't work
+            continue
+        elif len(emptyNeighbors) == 1:
+            if sameColorNeighborCt == 1:
+                # empty neighbor must be restricted to same color
+            elif sameColorNeighborCt == 2:
+                # empty neighbor cannot be same color
+            else: # sameColorNeighborCt == 0 or sameColorNeighborCt == 3:
+                continue
+        elif len(emptyNeighbors) == 2 and sameColorNeighborCt == 2:
+            # empty neighbors cannot be same color
+        else
+            # color works
+
+    return False
 
 def main():
-    global count
     if not os.path.exists(sys.argv[1]):
         print 'Input file does not exist'
         sys.exit(1)
 
     # parse input flow free as 2D char matrix
     global width, height
+    global count
 
     width = height = 0
     matrix = []
@@ -92,35 +142,47 @@ def main():
                 colors.add(cell)
                 endpts.add((x, y))
 
+    # set up most constrained variable data structure 
+    colorOptions = PriorityQueue()
+    for y, row in enumerate(matrix):
+        for x, cell in enumerate(row):
+            if cell == '_':
+                colorOptions.put((colors, x, y))  
 
-    # -- replace the dumb algorithm with smart algorithm here --
-    # initial call to the recursive backtracking
-
-    # if dumbBacktracking(matrix, colors, endpts, findNextEmpty(matrix), width*height-len(endpts)) == -1:
-    #     print 'No solution to Flow Free puzzle was found!'
+    #sum = 0
+    #max = 0
+    #iters = 1000
+    #for i in range(iters):
+    #    count = 0
+    #    if dumbBacktracking(matrix, colors, endpts, findNextEmpty(
+    #        matrix), width * height - len(endpts)) == -1:
+    #        print 'No solution to Free Flow puzzle was found!'
+    #    else:
+    #        # print 'num assignments: ' + str(count)
+    #        sum += count
+    #        if count > max: max = count
 
     # print '\n'.join([''.join([col for col in row]) for row in matrix])
 
-    sum = 0
-    max = 0
-    iters = 1000
-    for i in range(iters):
-        count = 0
-        if dumbBacktracking(matrix, colors, endpts, findNextEmpty(
-            matrix), width * height - len(endpts)) == -1:
-            print 'No sol found'
-        else:
-            # print 'num assignments: ' + str(count)
-            sum += count
-            if count > max: max = count
-
-
-        resetGrid(matrix, endpts, 0, 0)
-
-    sum /= iters
-    print 'avg iterations: ' + str(sum)
-    print 'max iterations: ' + str(max)
-
-
+    # initial call to the dumb backtracking
+    
+    #count = 0
+    #if dumbBacktracking(SET PARAMS HERE) == -1:
+    #    print 'No solution to Flow Free puzzle was found!'
+    #else:
+    #    print 'Solution to the Free Flow puzzle\n'
+    #    print '\n'.join([''.join([col for col in row]) for row in matrix])
+    #    print '\nnum assignments: ' + str(count)      
+    
+    # initial call to the smart backtracking
+    
+    count = 0
+    if smartBacktracking(matrix, colorOptions) is False:
+        print 'No solution to Flow Free puzzle was found!'
+    else:
+        print 'Solution to the Free Flow puzzle\n'
+        print '\n'.join([''.join([col for col in row]) for row in matrix])
+        print '\nnum assignments: ' + str(count)  
+    
 if __name__ == "__main__":
     main()
