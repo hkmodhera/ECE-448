@@ -133,18 +133,11 @@ def maxVal(matrix, depth, positionsA, positionsB):
             else:
                 # newDepth = depth
                 # val = randint(1, 10)
-                val = of1(positionsA)
+                val = of1(newPositionsB)
 
             # choose the move with the max value
             if val > v:
-                # print 'val greater'
-                # print v, val
                 v = val
-                # print v, val
-            else:
-                # print 'val less than'
-                # print v, val
-                pass
 
     return v # , newDepth
 
@@ -221,7 +214,7 @@ def minVal(matrix, depth, positionsA, positionsB):
             else:
                 # newDepth = depth
                 # val = randint(1, 10)
-                val = of1(positionsA)
+                val = of1(newPositionsB)
 
             # choose the move with the min value
             if val < v:
@@ -305,7 +298,7 @@ def minimaxSearch(matrix, depth, positionsA, positionsB):
 
             # val = randint(1, 10)
             # choose the move with the max value
-            print val, v, action, x, y
+            # print val, v, action, x, y
             if val >= v:
                 v = val
                 move = (action, (x, y))
@@ -391,7 +384,7 @@ def minValAB(matrix, depth, positionsA, positionsB, alpha, beta):
             else:
                 # newDepth = depth
                 # val = randint(1, 10)
-                val = of1(positionsB)
+                val = of1(newPositionsA)
 
             # choose the move with the min value
             if val < v:
@@ -474,7 +467,7 @@ def maxValAB(matrix, depth, positionsA, positionsB, alpha, beta):
             else:
                 # newDepth = depth
                 # val = randint(1, 10)
-                val = of1(positionsB)
+                val = of1(newPositionsA)
 
             # choose the move with the min value
             if val > v:
@@ -574,7 +567,6 @@ def main():
 
     # parse input board as 2D char matrix
     global width, height, actionsA, actionsB
-    global count
     actionsA = ['left', 'down', 'right']
     actionsB = ['left', 'up', 'right']
 
@@ -655,9 +647,9 @@ def main():
     for l in matrix: print l
     '''
 
-    turn = 0
-    posA = initialPositionsA33
-    posB = initialPositionsB33
+    turn = count = 0
+    posA = initialPositionsA44
+    posB = initialPositionsB44
 
     while(1):
         print 'turn: ' + str(turn)
@@ -698,6 +690,9 @@ def main():
 
         # next turn
         turn = turn ^ 1
+
+        count += 1
+        print 'count: ' + str(count)
 
         for l in matrix: print l
 
