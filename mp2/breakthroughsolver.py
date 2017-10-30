@@ -337,11 +337,19 @@ def main():
                            (3, 4), (4, 0), (4, 1), (4, 2),
                            (4, 3), (4, 4)]
 
+    initialPositionsA44 = [(0, 0), (0, 1), (0, 2), (0, 3)]
+
+    initialPositionsB44 = [(3, 0), (3, 1), (3, 2), (3, 3)]
+
+    initialPositionsA33 = [(0, 0), (0, 1), (0, 2)]
+
+    initialPositionsB33 = [(2, 0), (2, 1), (2, 2)]
+
 
     # for y, x in initialPositionsB: print matrix[y][x]
 
     start = time()
-    action, (x, y) = minimaxSearch(matrix, 0, initialPositionsA55, initialPositionsB55)
+    action, (x, y) = minimaxSearch(matrix, 0, initialPositionsA44, initialPositionsB44)
     print (time() - start) * 1000
 
     if action == 'right':
