@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, os.path
+import sys, os.path, copy
 from random import sample
 from Queue import PriorityQueue
 
@@ -19,6 +19,31 @@ def findNextEmpty(matrix):
                 return (col, row)
     return (0, 0)
 
+def findNeighborsColors(matrix, cmpColor, curX, curY):
+    emptyNeighbors = []
+    sameColorNeighbors = []
+    if curX - 1 >= 0:
+        if matrix[curY][curX-1] == '_': 
+            emptyNeighbors.append((curX - 1, curY))
+        elif matrix[curY][curX-1] == cmpColor: 
+            sameColorNeighbors.append((curX - 1, curY))
+        # else NOT same color as cmpColor (do nothing here)
+    if curY - 1 >= 0:
+        if matrix[curY-1][curX] == '_': 
+            emptyNeighbors.append((curX, curY - 1))
+        elif matrix[curY-1][curX] == cmpColor: 
+            sameColorNeighbors.append((curX, curY - 1))
+    if curX + 1 < width:
+        if matrix[curY][curX+1] == '_': 
+            emptyNeighbors.append((curX + 1, curY))
+        elif matrix[curY][curX+1] == cmpColor:
+            sameColorNeighbors.append((curX + 1, curY))
+    if curY + 1 < height:
+        if matrix[curY+1][curX] == '_': 
+            emptyNeighbors.append((curX, curY + 1))
+        elif matrix[curY+1][curX] == cmpColor: 
+            sameColorNeighbors.append((curX, curY + 1))
+    return (emptyNeighbors, sameColorNeighbors)
 
 # ----------- BACKTRACKING FUNCTIONS ----------------- #
 
@@ -59,60 +84,121 @@ def dumbBacktracking(matrix, colorSet, srcCells, currentEmpty, numEmptyCells):
 
     return -1
 
-def smartBacktracking(matrix, colorOptions):
+def smartBacktracking(matrix, colorOptions, srcCellsSet):
     # if our priority queue has no variable left to assign, the puzzle must be solved
     if colorOptions.empty():
+        # for srcCellX, srcCellY in srcCellsSet:
+        #     srcCellColor = matrix[srcCellY][srcCellX]
+        #     _, sameColNeighbors = findNeighborsColors(matrix, srcCellColor, srcCellX, srcCellY)
+        #     if len(sameColNeighbors) != 1:
+        #         return False
         return True
 
     mostConstVar = colorOptions.get()
-    varDomain = list(mostConstVar[0])    #deep copy of the possible colors for (varX, varY) cell
-    varX, varY = mostConstVar[1:]
-    
+    try:
+        varDomain = list(mostConstVar[0])    #deep copy of the possible colors for (varX, varY) cell
+        varX, varY = mostConstVar[1:]
+    except Exception:
+        print '----------'
+        print mostConstVar
+
     # if there's no color left to choose, then we clearly hit a dead end
     while varDomain:
         pickColor = varDomain.pop()
-    
+
+        print '\n'.join([''.join([col for col in row]) for row in matrix])
+        print '--------- (%d, %d): %c' % (varX, varY, pickColor)
+
         # gather information on adjacent cells of current
-        emptyNeighbors = []
-        sameColorNeighborCt = 0
-        if varX-1 >= 0:
-            if matrix[varY][varX-1] == '_': 
-                emptyNeighbors.append((varX-1, varY))
-            elif matrix[varY][varX-1] == pickColor: 
-                sameColorNeighborCt += 1
-            # else NOT pickColor (do nothing here)
-        if varY-1 >=0:
-            if matrix[varY-1][varX] == '_': 
-                emptyNeighbors.append((varX, varY-1))
-            elif matrix[varY-1][varX] == pickColor: 
-                sameColorNeighborCt += 1
-        if x+1 < width:
-             if matrix[varY][varX+1] == '_': 
-                emptyNeighbors.append((varX+1, varY))
-            elif matrix[varY][varX+1] == pickColor: 
-                sameColorNeighborCt += 1
-        if y+1 < height 
-            if matrix[varY+1][varX] == '_': 
-                emptyNeighbors.append((varX, varY+1))
-            elif matrix[varY+1][varX] == pickColor: 
-                sameColorNeighborCt += 1
+        emptyNeighbors, sameColorNeighbors = findNeighborsColors(matrix, pickColor, varX, varY)
+        if len(sameColorNeighbors) == 2:
+            (x1, y1), (x2, y2) = sameColorNeighbors[:]
+            if x1 != x2 and y1 != y2:
+                cornerX = x1 if x1 != varX else x2
+                cornerY = y1 if y1 != varY else y2
+                if matrix[cornerY][cornerX] == pickColor:
+                    continue    # if corner color matches pick, change to avoid zigzag
 
         # perform CSP checks for the chosen color
-        if len(emptyNeighbors) == 0 and sameColorNeighborCt != 2:
-            # choose another color; this one doesn't work
-            continue
+        saveTmpVars = []
+        if len(emptyNeighbors) == 0 and len(sameColorNeighbors) != 2:
+            continue    # choose another color; this one doesn't work
         elif len(emptyNeighbors) == 1:
-            if sameColorNeighborCt == 1:
+            if len(sameColorNeighbors) == 1:
                 # empty neighbor must be restricted to same color
-            elif sameColorNeighborCt == 2:
+                tempStorage = []
+                while not colorOptions.empty():
+                    tmpVar = colorOptions.get()
+                    if tmpVar[1:] in emptyNeighbors:
+                        saveTmpVars.append(copy.deepcopy(tmpVar))
+                        tempStorage.append( ([pickColor], tmpVar[1], tmpVar[2]) )
+                        break    # we found the only empty neighbor whose domain we want to restrict
+                    else:
+                        tempStorage.append(tmpVar)
+                [colorOptions.put(var) for var in tempStorage]
+            elif len(sameColorNeighbors) == 2:
                 # empty neighbor cannot be same color
+                tempStorage = []
+                while not colorOptions.empty():
+                    tmpVar = colorOptions.get()
+                    if tmpVar[1:] in emptyNeighbors:
+                        saveTmpVars.append(copy.deepcopy(tmpVar))
+                        tmpVar[0].remove(pickColor)
+                        tempStorage.append(tmpVar)
+                        break    # we found the only empty neighbor whose domain we want to restrict
+                    else:
+                        tempStorage.append(tmpVar)
+                [colorOptions.put(var) for var in tempStorage]
             else: # sameColorNeighborCt == 0 or sameColorNeighborCt == 3:
-                continue
-        elif len(emptyNeighbors) == 2 and sameColorNeighborCt == 2:
-            # empty neighbors cannot be same color
-        else
-            # color works
+                continue    # pickColor doesn't work; try next available color
+        elif len(emptyNeighbors) == 2:
+            if len(sameColorNeighbors) == 0:      # empty neighbors have to be same color
+                tempStorage = []
+                while not colorOptions.empty():
+                    tmpVar = colorOptions.get()
+                    if tmpVar[1:] in emptyNeighbors:
+                        saveTmpVars.append(copy.deepcopy(tmpVar))
+                        tempStorage.append( ([pickColor], tmpVar[1], tmpVar[2]) )
+                    else:
+                        tempStorage.append(tmpVar)
+                [colorOptions.put(var) for var in tempStorage]
+            elif len(sameColorNeighbors) == 2:    # empty neighbors cannot be same color
+                tempStorage = []
+                while not colorOptions.empty():
+                    tmpVar = colorOptions.get()
+                    if tmpVar[1:] in emptyNeighbors:
+                        saveTmpVars.append(copy.deepcopy(tmpVar))
+                        try:
+                            tmpVar[0].remove(pickColor)
+                        except Exception:
+                            pass
+                        tempStorage.append(tmpVar)
+                    else:
+                        tempStorage.append(tmpVar)
+                [colorOptions.put(var) for var in tempStorage]
+        print 'saveTmpVars before: ' + str(saveTmpVars)
+        print 'varDomain before: ' + str(varDomain)
+        print '--------- (%d, %d): %c' % (varX, varY, pickColor)
+        # else: color works; move onto recursive call
 
+        matrix[varY][varX] = pickColor
+        if smartBacktracking(matrix, colorOptions, srcCellsSet) is True:
+            return True
+        else:
+            matrix[varY][varX] = '_'
+            print 'saveTmpVars after: ' + str(saveTmpVars)
+            print 'varDomain after: ' + str(varDomain)
+            print '--------- (%d, %d): %c' % (varX, varY, pickColor)
+            if saveTmpVars:
+                tempStorage = []
+                while not colorOptions.empty():
+                    tmpVar = colorOptions.get()
+                    if tmpVar[1:] not in emptyNeighbors:
+                        tempStorage.append(tmpVar)
+                [colorOptions.put(var) for var in tempStorage]
+                [colorOptions.put(var) for var in saveTmpVars]
+
+    colorOptions.put(mostConstVar)  # restore most constrained var if path is not part of soln
     return False
 
 def main():
@@ -144,10 +230,41 @@ def main():
 
     # set up most constrained variable data structure 
     colorOptions = PriorityQueue()
+
+    # ---- THIS EXTRA CHECK MAKES THE 5x5 PUZZLE WORK ----- #
+    # Some how need to do something like this at the beginning of the recursion
+    coordColorOptions = []
     for y, row in enumerate(matrix):
         for x, cell in enumerate(row):
-            if cell == '_':
-                colorOptions.put((colors, x, y))  
+            empty = []
+            if cell != '_':
+                print x, y
+                if x - 1 >= 0:
+                    if matrix[y][x-1] == '_': 
+                        empty.append((x - 1, y))
+                if y - 1 >= 0:
+                    if matrix[y-1][x] == '_': 
+                        empty.append((x, y - 1))
+                if x + 1 < width:
+                    if matrix[y][x+1] == '_': 
+                        empty.append((x + 1, y))
+                if y + 1 < height:
+                    if matrix[y+1][x] == '_': 
+                        empty.append((x, y + 1))
+                if len(empty) == 1:
+                    i, j = (empty[0][0], empty[0][1])
+                    coordColorOptions.append((empty[0][0], empty[0][1]))
+                    # colorOptions.put(([cell], empty[0][0], empty[0][1]))
+                    matrix[j][i] = cell
+                    print colorOptions.queue, empty
+
+    for y, row in enumerate(matrix):
+        for x, cell in enumerate(row):
+            if cell == '_' and (x,y) not in coordColorOptions:
+                colorOptions.put((colors, x, y))
+
+    print '-----------'
+    print colorOptions.queue
 
     #sum = 0
     #max = 0
@@ -177,7 +294,7 @@ def main():
     # initial call to the smart backtracking
     
     count = 0
-    if smartBacktracking(matrix, colorOptions) is False:
+    if smartBacktracking(matrix, colorOptions, endpts) is False:
         print 'No solution to Flow Free puzzle was found!'
     else:
         print 'Solution to the Free Flow puzzle\n'
