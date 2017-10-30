@@ -67,34 +67,34 @@ def smartBacktracking(matrix, colorOptions):
     mostConstVar = colorOptions.get()
     varDomain = list(mostConstVar[0])    #deep copy of the possible colors for (varX, varY) cell
     varX, varY = mostConstVar[1:]
-    
+
     # if there's no color left to choose, then we clearly hit a dead end
     while varDomain:
         pickColor = varDomain.pop()
-    
+
         # gather information on adjacent cells of current
         emptyNeighbors = []
         sameColorNeighborCt = 0
         if varX-1 >= 0:
-            if matrix[varY][varX-1] == '_': 
+            if matrix[varY][varX-1] == '_':
                 emptyNeighbors.append((varX-1, varY))
-            elif matrix[varY][varX-1] == pickColor: 
+            elif matrix[varY][varX-1] == pickColor:
                 sameColorNeighborCt += 1
             # else NOT pickColor (do nothing here)
         if varY-1 >=0:
-            if matrix[varY-1][varX] == '_': 
+            if matrix[varY-1][varX] == '_':
                 emptyNeighbors.append((varX, varY-1))
-            elif matrix[varY-1][varX] == pickColor: 
+            elif matrix[varY-1][varX] == pickColor:
                 sameColorNeighborCt += 1
         if x+1 < width:
-             if matrix[varY][varX+1] == '_': 
+            if matrix[varY][varX+1] == '_':
                 emptyNeighbors.append((varX+1, varY))
-            elif matrix[varY][varX+1] == pickColor: 
+            elif matrix[varY][varX+1] == pickColor:
                 sameColorNeighborCt += 1
-        if y+1 < height 
-            if matrix[varY+1][varX] == '_': 
+        if y+1 < height:
+            if matrix[varY+1][varX] == '_':
                 emptyNeighbors.append((varX, varY+1))
-            elif matrix[varY+1][varX] == pickColor: 
+            elif matrix[varY+1][varX] == pickColor:
                 sameColorNeighborCt += 1
 
         # perform CSP checks for the chosen color
@@ -142,12 +142,12 @@ def main():
                 colors.add(cell)
                 endpts.add((x, y))
 
-    # set up most constrained variable data structure 
+    # set up most constrained variable data structure
     colorOptions = PriorityQueue()
     for y, row in enumerate(matrix):
         for x, cell in enumerate(row):
             if cell == '_':
-                colorOptions.put((colors, x, y))  
+                colorOptions.put((colors, x, y))
 
     #sum = 0
     #max = 0
@@ -165,24 +165,24 @@ def main():
     # print '\n'.join([''.join([col for col in row]) for row in matrix])
 
     # initial call to the dumb backtracking
-    
+
     #count = 0
     #if dumbBacktracking(SET PARAMS HERE) == -1:
     #    print 'No solution to Flow Free puzzle was found!'
     #else:
     #    print 'Solution to the Free Flow puzzle\n'
     #    print '\n'.join([''.join([col for col in row]) for row in matrix])
-    #    print '\nnum assignments: ' + str(count)      
-    
+    #    print '\nnum assignments: ' + str(count)
+
     # initial call to the smart backtracking
-    
+
     count = 0
     if smartBacktracking(matrix, colorOptions) is False:
         print 'No solution to Flow Free puzzle was found!'
     else:
         print 'Solution to the Free Flow puzzle\n'
         print '\n'.join([''.join([col for col in row]) for row in matrix])
-        print '\nnum assignments: ' + str(count)  
-    
+        print '\nnum assignments: ' + str(count)
+
 if __name__ == "__main__":
     main()
