@@ -5,6 +5,21 @@ from random import sample, randint, random
 from Queue import PriorityQueue
 import copy
 
+'''
+A 'Breakthrough' simulation using minimax vs. alpha-beta search with various
+move ordering heuristics.
+
+We aim to find:
+    A. The final state of the board and the winning player.: DONE
+    B. The total number of game tree nodes expanded by each player.:
+    C. The avg # nodes expanded per move and avg amount of time per move.:
+    D. The # of opponent workers captured by each player, as well as the total #
+       of moves required till the win.:
+
+Authors:                                  Mihir Sherlekar, Harsh Modhera, Ben Li
+Revised:                                  10/30/2017
+'''
+
 
 # ------------------------------- HEURISTICS --------------------------------- #
 
@@ -14,6 +29,12 @@ def dh1(positions):
 
 def of1(positions):
     return 2 * (30 - len(positions)) + random()
+
+def dh2():
+    return
+
+def of2():
+    return
 
 
 # --------------------------------- HELPERS ---------------------------------- #
@@ -63,6 +84,8 @@ def getPositions(matrix):
 
 # returns a utility value for MAX
 def maxVal(matrix, depth, positionsA, positionsB):
+    global nodesExpdA
+
     # if state is a terminal state, then return the utility at that state
     # if depth == 3:
     #     return
@@ -89,12 +112,14 @@ def maxVal(matrix, depth, positionsA, positionsB):
                         newPositionsA.append((x + 1, y + 1))
                         result[x][y] = '_'
                         result[x + 1][y + 1] = 'A'
+                        nodesExpdA += 1
                     elif result[x + 1][y + 1] == 'B':
                         newPositionsB.remove((x + 1, y + 1))
                         newPositionsA.remove((x, y))
                         newPositionsA.append((x + 1, y + 1))
                         result[x][y] = '_'
                         result[x + 1][y + 1] = 'A'
+                        nodesExpdA += 1
                     else:
                         continue
                 else:
@@ -106,6 +131,7 @@ def maxVal(matrix, depth, positionsA, positionsB):
                         newPositionsA.append((x + 1, y))
                         result[x][y] = '_'
                         result[x + 1][y] = 'A'
+                        nodesExpdA += 1
                     else:
                         continue
                 else:
@@ -117,12 +143,14 @@ def maxVal(matrix, depth, positionsA, positionsB):
                         newPositionsA.append((x + 1, y - 1))
                         result[x][y] = '_'
                         result[x + 1][y - 1] = 'A'
+                        nodesExpdA += 1
                     elif result[x + 1][y - 1] == 'B':
                         newPositionsB.remove((x + 1, y - 1))
                         newPositionsA.remove((x, y))
                         newPositionsA.append((x + 1, y - 1))
                         result[x][y] = '_'
                         result[x + 1][y - 1] = 'A'
+                        nodesExpdA += 1
                     else:
                         continue
                 else:
@@ -143,6 +171,8 @@ def maxVal(matrix, depth, positionsA, positionsB):
 
 # returns a utility value for MIN
 def minVal(matrix, depth, positionsA, positionsB):
+    global nodesExpdA
+
     # if state is a terminal state, then return the utility at that state
     # if depth == 3:
     #     return
@@ -170,12 +200,14 @@ def minVal(matrix, depth, positionsA, positionsB):
                         newPositionsB.append((x - 1, y + 1))
                         result[x][y] = '_'
                         result[x - 1][y + 1] = 'B'
+                        nodesExpdA += 1
                     elif result[x - 1][y + 1] == 'A':
                         newPositionsA.remove((x - 1, y + 1))
                         newPositionsB.remove((x, y))
                         newPositionsB.append((x - 1, y + 1))
                         result[x][y] = '_'
                         result[x - 1][y + 1] = 'B'
+                        nodesExpdA += 1
                     else:
                         continue
                 else:
@@ -187,6 +219,7 @@ def minVal(matrix, depth, positionsA, positionsB):
                         newPositionsB.append((x - 1, y))
                         result[x][y] = '_'
                         result[x - 1][y] = 'B'
+                        nodesExpdA += 1
                     else:
                         continue
                 else:
@@ -198,12 +231,14 @@ def minVal(matrix, depth, positionsA, positionsB):
                         newPositionsB.append((x - 1, y - 1))
                         result[x][y] = '_'
                         result[x - 1][y - 1] = 'B'
+                        nodesExpdA += 1
                     elif result[x - 1][y - 1] == 'A':
                         newPositionsA.remove((x - 1, y - 1))
                         newPositionsB.remove((x, y))
                         newPositionsB.append((x - 1, y - 1))
                         result[x][y] = '_'
                         result[x - 1][y - 1] = 'B'
+                        nodesExpdA += 1
                     else:
                         continue
                 else:
@@ -224,6 +259,7 @@ def minVal(matrix, depth, positionsA, positionsB):
 
 # returns an action arg max_(a in ACTIONS(state)) minVal(result(state, a))
 def minimaxSearch(matrix, depth, positionsA, positionsB):
+    global nodesExpdA
     player = 'A'
 
     # action = default action
@@ -249,12 +285,14 @@ def minimaxSearch(matrix, depth, positionsA, positionsB):
                         newPositionsA.append((x + 1, y + 1))
                         result[x][y] = '_'
                         result[x + 1][y + 1] = 'A'
+                        nodesExpdA += 1
                     elif result[x + 1][y + 1] == 'B':
                         newPositionsB.remove((x + 1, y + 1))
                         newPositionsA.remove((x, y))
                         newPositionsA.append((x + 1, y + 1))
                         result[x][y] = '_'
                         result[x + 1][y + 1] = 'A'
+                        nodesExpdA += 1
                     else:
                         continue
                 else:
@@ -266,12 +304,7 @@ def minimaxSearch(matrix, depth, positionsA, positionsB):
                         newPositionsA.append((x + 1, y))
                         result[x][y] = '_'
                         result[x + 1][y] = 'A'
-                    elif result[x + 1][y] == 'B':
-                        newPositionsB.remove((x + 1, y))
-                        newPositionsA.remove((x, y))
-                        newPositionsA.append((x + 1, y))
-                        result[x][y] = '_'
-                        result[x + 1][y] = 'A'
+                        nodesExpdA += 1
                     else:
                         continue
                 else:
@@ -283,12 +316,14 @@ def minimaxSearch(matrix, depth, positionsA, positionsB):
                         newPositionsA.append((x + 1, y - 1))
                         result[x][y] = '_'
                         result[x + 1][y - 1] = 'A'
+                        nodesExpdA += 1
                     elif result[x + 1][y - 1] == 'B':
                         newPositionsB.remove((x + 1, y - 1))
                         newPositionsA.remove((x, y))
                         newPositionsA.append((x + 1, y - 1))
                         result[x][y] = '_'
                         result[x + 1][y - 1] = 'A'
+                        nodesExpdA += 1
                     else:
                         continue
                 else:
@@ -307,7 +342,7 @@ def minimaxSearch(matrix, depth, positionsA, positionsB):
 
 
     # print depth + 1 # newDepth
-    print move
+    # print move
     return move
 
 
@@ -315,6 +350,8 @@ def minimaxSearch(matrix, depth, positionsA, positionsB):
 
 # returns a utility value for MAX
 def minValAB(matrix, depth, positionsA, positionsB, alpha, beta):
+    global nodesExpdB
+
     # if state is a terminal state, then return the utility at that state
     # if depth == 3:
     #     return
@@ -340,12 +377,14 @@ def minValAB(matrix, depth, positionsA, positionsB, alpha, beta):
                         newPositionsA.append((x + 1, y + 1))
                         result[x][y] = '_'
                         result[x + 1][y + 1] = 'A'
+                        nodesExpdB += 1
                     elif result[x + 1][y + 1] == 'B':
                         newPositionsB.remove((x + 1, y + 1))
                         newPositionsA.remove((x, y))
                         newPositionsA.append((x + 1, y + 1))
                         result[x][y] = '_'
                         result[x + 1][y + 1] = 'A'
+                        nodesExpdB += 1
                     else:
                         continue
                 else:
@@ -357,6 +396,7 @@ def minValAB(matrix, depth, positionsA, positionsB, alpha, beta):
                         newPositionsA.append((x + 1, y))
                         result[x][y] = '_'
                         result[x + 1][y] = 'A'
+                        nodesExpdB += 1
                     else:
                         continue
                 else:
@@ -368,12 +408,14 @@ def minValAB(matrix, depth, positionsA, positionsB, alpha, beta):
                         newPositionsA.append((x + 1, y - 1))
                         result[x][y] = '_'
                         result[x + 1][y - 1] = 'A'
+                        nodesExpdB += 1
                     elif result[x + 1][y - 1] == 'B':
                         newPositionsB.remove((x + 1, y - 1))
                         newPositionsA.remove((x, y))
                         newPositionsA.append((x + 1, y - 1))
                         result[x][y] = '_'
                         result[x + 1][y - 1] = 'A'
+                        nodesExpdB += 1
                     else:
                         continue
                 else:
@@ -398,6 +440,8 @@ def minValAB(matrix, depth, positionsA, positionsB, alpha, beta):
 
 # returns a utility value for MIN
 def maxValAB(matrix, depth, positionsA, positionsB, alpha, beta):
+    global nodesExpdB
+
     # if state is a terminal state, then return the utility at that state
     # if depth == 3:
     #     return
@@ -423,12 +467,14 @@ def maxValAB(matrix, depth, positionsA, positionsB, alpha, beta):
                         newPositionsB.append((x - 1, y + 1))
                         result[x][y] = '_'
                         result[x - 1][y + 1] = 'B'
+                        nodesExpdB += 1
                     elif result[x - 1][y + 1] == 'A':
                         newPositionsA.remove((x - 1, y + 1))
                         newPositionsB.remove((x, y))
                         newPositionsB.append((x - 1, y + 1))
                         result[x][y] = '_'
                         result[x - 1][y + 1] = 'B'
+                        nodesExpdB += 1
                     else:
                         continue
                 else:
@@ -440,6 +486,7 @@ def maxValAB(matrix, depth, positionsA, positionsB, alpha, beta):
                         newPositionsB.append((x - 1, y))
                         result[x][y] = '_'
                         result[x - 1][y] = 'B'
+                        nodesExpdB += 1
                     else:
                         continue
                 else:
@@ -451,12 +498,14 @@ def maxValAB(matrix, depth, positionsA, positionsB, alpha, beta):
                         newPositionsB.append((x - 1, y - 1))
                         result[x][y] = '_'
                         result[x - 1][y - 1] = 'B'
+                        nodesExpdB += 1
                     elif result[x - 1][y - 1] == 'A':
                         newPositionsA.remove((x - 1, y - 1))
                         newPositionsB.remove((x, y))
                         newPositionsB.append((x - 1, y - 1))
                         result[x][y] = '_'
                         result[x - 1][y - 1] = 'B'
+                        nodesExpdB += 1
                     else:
                         continue
                 else:
@@ -481,6 +530,7 @@ def maxValAB(matrix, depth, positionsA, positionsB, alpha, beta):
 
 # returns an action arg max_(a in ACTIONS(state)) minVal(result(state, a))
 def alphaBetaSearch(matrix, depth, positionsA, positionsB):
+    global nodesExpdB
     player = 'B'
     v = -1000000
 
@@ -502,12 +552,14 @@ def alphaBetaSearch(matrix, depth, positionsA, positionsB):
                         newPositionsB.append((x - 1, y + 1))
                         result[x][y] = '_'
                         result[x - 1][y + 1] = 'B'
+                        nodesExpdB += 1
                     elif result[x - 1][y + 1] == 'A':
                         newPositionsA.remove((x - 1, y + 1))
                         newPositionsB.remove((x, y))
                         newPositionsB.append((x - 1, y + 1))
                         result[x][y] = '_'
                         result[x - 1][y + 1] = 'B'
+                        nodesExpdB += 1
                     else:
                         continue
                 else:
@@ -519,12 +571,7 @@ def alphaBetaSearch(matrix, depth, positionsA, positionsB):
                         newPositionsB.append((x - 1, y))
                         result[x][y] = '_'
                         result[x - 1][y] = 'B'
-                    elif result[x - 1][y] == 'A':
-                        newPositionsA.remove((x - 1, y))
-                        newPositionsB.remove((x, y))
-                        newPositionsB.append((x - 1, y))
-                        result[x][y] = '_'
-                        result[x - 1][y] = 'B'
+                        nodesExpdB += 1
                     else:
                         continue
                 else:
@@ -536,12 +583,14 @@ def alphaBetaSearch(matrix, depth, positionsA, positionsB):
                         newPositionsB.append((x - 1, y - 1))
                         result[x][y] = '_'
                         result[x - 1][y - 1] = 'B'
+                        nodesExpdB += 1
                     elif result[x - 1][y - 1] == 'A':
                         newPositionsA.remove((x - 1, y - 1))
                         newPositionsB.remove((x, y))
                         newPositionsB.append((x - 1, y - 1))
                         result[x][y] = '_'
                         result[x - 1][y - 1] = 'B'
+                        nodesExpdB += 1
                     else:
                         continue
                 else:
@@ -566,7 +615,7 @@ def main():
         sys.exit(1)
 
     # parse input board as 2D char matrix
-    global width, height, actionsA, actionsB
+    global width, height, actionsA, actionsB, nodesExpdA, nodesExpdB
     actionsA = ['left', 'down', 'right']
     actionsB = ['left', 'up', 'right']
 
@@ -583,37 +632,11 @@ def main():
     # print width, height
 
     # top player (black) = A, bottom player (white) = B
-    initialPositionsA = [(0, 0), (0, 1), (0, 2), (0, 3),
-                         (0, 4), (0, 5), (0, 6), (0, 7),
-                         (1, 0), (1, 1), (1, 2), (1, 3),
-                         (1, 4), (1, 5), (1, 6), (1, 7)]
 
-    initialPositionsB = [(6, 0), (6, 1), (6, 2), (6, 3),
-                         (6, 4), (6, 5), (6, 6), (6, 7),
-                         (7, 0), (7, 1), (7, 2), (7, 3),
-                         (7, 4), (7, 5), (7, 6), (7, 7)]
-
-    initialPositionsA55 = [(0, 0), (0, 1), (0, 2), (0, 3),
-                           (0, 4), (1, 0), (1, 1), (1, 2),
-                           (1, 3), (1, 4)]
-
-    initialPositionsB55 = [(3, 0), (3, 1), (3, 2), (3, 3),
-                           (3, 4), (4, 0), (4, 1), (4, 2),
-                           (4, 3), (4, 4)]
-
-    initialPositionsA44 = [(0, 0), (0, 1), (0, 2), (0, 3)]
-
-    initialPositionsB44 = [(3, 0), (3, 1), (3, 2), (3, 3)]
-
-    initialPositionsA33 = [(0, 0), (0, 1), (0, 2)]
-
-    initialPositionsB33 = [(2, 0), (2, 1), (2, 2)]
-
-
-    # for y, x in initialPositionsB: print matrix[y][x]
+    # test minimax search
     '''
     start = time()
-    action, (x, y) = minimaxSearch(matrix, 0, initialPositionsA33, initialPositionsB33)
+    action, (x, y) = minimaxSearch(matrix, 0, posA, posB)
     print (time() - start) * 1000
 
     if action == 'right':
@@ -629,9 +652,10 @@ def main():
     for l in matrix: print l
     '''
 
+    # test alpha-beta search
     '''
     start = time()
-    action, (x, y) = alphaBetaSearch(matrix, 0, initialPositionsA33, initialPositionsB33)
+    action, (x, y) = alphaBetaSearch(matrix, 0, posA, posB)
     print (time() - start) * 1000
 
     if action == 'right':
@@ -647,20 +671,28 @@ def main():
     for l in matrix: print l
     '''
 
-    turn = count = 0
-    posA = initialPositionsA44
-    posB = initialPositionsB44
+    turn = countA = countB = 0
+    timeA = timeB = avgTimeA = avgTimeB = 0
+    nodesExpdA = nodesExpdB = totalNodesExpdA = totalNodesExpdB = avgNodesA = avgNodesB = 0
+    winner = None
+    posA, posB = getPositions(matrix)
+    origPosA, origPosB = [copy.deepcopy(posA), copy.deepcopy(posB)]
 
     while(1):
         print 'turn: ' + str(turn)
         depth = 0
 
         # check if game is complete
-        if 'A' in matrix[height - 1] or 'B' in matrix[0] or len(posA) == 0 or len(posB) == 0:
+        if 'A' in matrix[height - 1] or len(posB) == 0:
+            winner = 'A'
+            break
+        elif 'B' in matrix[0] or len(posA) == 0:
+            winner = 'B'
             break
 
         if turn == 0:
             # player A's turn
+            timeA = time()
             action, (x, y) = minimaxSearch(matrix, depth, posA, posB)
             if action == 'right':
                 matrix[x][y] = '_'
@@ -671,8 +703,10 @@ def main():
             elif action == 'left':
                 matrix[x][y] = '_'
                 matrix[x + 1][y - 1] = 'A'
+            avgTimeA += (time() - timeA)
         elif turn == 1:
             # player B's turn
+            timeB = time()
             action, (x, y) = alphaBetaSearch(matrix, depth, posA, posB)
             if action == 'right':
                 matrix[x][y] = '_'
@@ -683,18 +717,45 @@ def main():
             elif action == 'left':
                 matrix[x][y] = '_'
                 matrix[x - 1][y - 1] = 'B'
+            avgTimeB += (time() - timeB)
 
         # calculate new positions
         posA, posB = getPositions(matrix)
-        print posA, posB
+
+        if turn == 0: countA += 1
+        if turn == 1: countB += 1
+        print 'Total moves: ' + str(countA + countB)
 
         # next turn
         turn = turn ^ 1
 
-        count += 1
-        print 'count: ' + str(count)
+        totalNodesExpdA += nodesExpdA
+        totalNodesExpdB += nodesExpdB
+        nodesExpdA = nodesExpdB = 0
 
-        for l in matrix: print l
+        # for l in matrix: print l
+
+    avgNodesA = totalNodesExpdA / (countA + countB)
+    avgNodesB = totalNodesExpdB / (countA + countB)
+    avgTimeA /= countA + countB
+    avgTimeB /= countA + countB
+
+    print '\n----------------------------------------------------------------\n'
+    print 'Player ' + winner + ' wins!\n'
+
+    print 'Total number of nodes expanded by player A: ' + str(totalNodesExpdA)
+    print 'Avg number of nodes expanded by player A: ' + str(avgNodesA)
+    print 'Avg time per move for player A: ' + str(avgTimeA)
+    print 'Number of workers captured by player A: ' + str(len(origPosA) - len(posA))
+    print 'Number of moves made by player A: ' + str(countA) + '\n'
+
+    print 'Total number of nodes expanded by player B: ' + str(totalNodesExpdB)
+    print 'Avg number of nodes expanded by player B: ' + str(avgNodesB)
+    print 'Avg time per move for player B: ' + str(avgTimeB)
+    print 'Number of workers captured by player B: ' + str(len(origPosB) - len(posB))
+    print 'Number of moves made by player B: ' + str(countB) + '\n'
+
+    for l in matrix: print l
 
 
 if __name__ == "__main__":
