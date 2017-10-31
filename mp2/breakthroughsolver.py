@@ -4,6 +4,7 @@ from time import time
 from random import sample, randint, random
 from Queue import PriorityQueue
 import copy
+# from alpha_beta_playerA import minValAB_A, maxValAB_A, alphaBetaSearchA
 
 '''
 A 'Breakthrough' simulation using minimax vs. alpha-beta search with various
@@ -26,15 +27,45 @@ Revised:                                  10/30/2017
 def dh1(positions):
     return 2 * len(positions) + random()
 
-
 def of1(positions):
     return 2 * (30 - len(positions)) + random()
 
-def dh2():
-    return
+def dh2(positions):
+    # we DON'T want to move row 0, cols 1, 3
+    value = 50 + random()
 
-def of2():
-    return
+    # weight important positions
+    if (0, 1) in positions: value += 25
+    if (0, 3) in positions: value += 25
+    if (1, 1) in positions: value += 10
+    if (1, 3) in positions: value += 10
+
+    # weight the overall positions towards your endzone
+    for x, y in positions:
+        value += (height - x) * 2
+
+    return value
+
+# goal: continued forward movement towards opponent's endzone
+def of2(positions):
+    captureLeft = captureRight = dist = 0
+
+    for x, y in positions:
+        dist = (height - x) * 10
+    dist += random()
+    '''
+    try:
+        if matrix[x - 1][y - 1] == 'A': captureLeft = 100 + random()
+    except Exception:
+        pass
+
+    try:
+        if matrix[x - 1][y + 1] == 'A': captureRight = 100 + random()
+    except Exception:
+        pass
+    '''
+
+    return dist
 
 
 # --------------------------------- HELPERS ---------------------------------- #
@@ -89,6 +120,12 @@ def maxVal(matrix, depth, positionsA, positionsB):
     # if state is a terminal state, then return the utility at that state
     # if depth == 3:
     #     return
+
+    if len(positionsA) == 0 or len(positionsB) == 0 or (depth - 1) == 3:
+        return dh1(positionsA)
+
+    if 'A' in matrix[height - 1] or 'B' in matrix[0]:
+        return dh1(positionsA)
 
     # v = utility = -infinity
     # v = float('-inf')
@@ -161,7 +198,7 @@ def maxVal(matrix, depth, positionsA, positionsB):
             else:
                 # newDepth = depth
                 # val = randint(1, 10)
-                val = of1(newPositionsB)
+                val = dh1(newPositionsA)
 
             # choose the move with the max value
             if val > v:
@@ -177,6 +214,14 @@ def minVal(matrix, depth, positionsA, positionsB):
     # if depth == 3:
     #     return
     # print depth
+
+    if len(positionsA) == 0 or len(positionsB) == 0 or (depth - 1) == 3:
+        return dh1(positionsA)
+
+    if 'A' in matrix[height - 1] or 'B' in matrix[0]:
+        return dh1(positionsA)
+
+    # if either positionsA or positionsB are empty, then return heuristic val
 
     # v = utility = +infinity
     # v = float('inf')
@@ -249,7 +294,7 @@ def minVal(matrix, depth, positionsA, positionsB):
             else:
                 # newDepth = depth
                 # val = randint(1, 10)
-                val = of1(newPositionsB)
+                val = dh1(newPositionsA)
 
             # choose the move with the min value
             if val < v:
@@ -356,6 +401,12 @@ def minValAB(matrix, depth, positionsA, positionsB, alpha, beta):
     # if depth == 3:
     #     return
 
+    if len(positionsA) == 0 or len(positionsB) == 0 or (depth - 1) == 3:
+        return of1(positionsB)
+
+    if 'A' in matrix[height - 1] or 'B' in matrix[0]:
+        return of1(positionsB)
+
     # v = utility = +infinity
     # v = float('+inf')
     v = 1000000 # 2**20
@@ -426,7 +477,7 @@ def minValAB(matrix, depth, positionsA, positionsB, alpha, beta):
             else:
                 # newDepth = depth
                 # val = randint(1, 10)
-                val = of1(newPositionsA)
+                val = of1(newPositionsB)
 
             # choose the move with the min value
             if val < v:
@@ -445,6 +496,12 @@ def maxValAB(matrix, depth, positionsA, positionsB, alpha, beta):
     # if state is a terminal state, then return the utility at that state
     # if depth == 3:
     #     return
+
+    if len(positionsA) == 0 or len(positionsB) == 0 or (depth - 1) == 3:
+        return of1(positionsB)
+
+    if 'A' in matrix[height - 1] or 'B' in matrix[0]:
+        return of1(positionsB)
 
     # v = utility = -infinity
     # v = float('-inf')
@@ -516,7 +573,7 @@ def maxValAB(matrix, depth, positionsA, positionsB, alpha, beta):
             else:
                 # newDepth = depth
                 # val = randint(1, 10)
-                val = of1(newPositionsA)
+                val = of1(newPositionsB)
 
             # choose the move with the min value
             if val > v:
@@ -597,6 +654,282 @@ def alphaBetaSearch(matrix, depth, positionsA, positionsB):
                     continue
 
             val = maxValAB(result, depth + 1, newPositionsA, newPositionsB, (-1) * 2**20, 2**20)
+
+            # choose the move with the max value
+            if val >= v:
+                v = val
+                move = (action, (x, y))
+
+    print move
+    return move
+
+
+# ---------------------------- ALPHA BETA for A ------------------------------ #
+
+# returns a utility value for MAX
+def maxValAB_A(matrix, depth, positionsA, positionsB, alpha, beta):
+    global nodesExpdA
+
+    # if state is a terminal state, then return the utility at that state
+    # if depth == 3:
+    #     return
+
+    if len(positionsA) == 0 or len(positionsB) == 0 or (depth - 1) == 3:
+        return dh2(positionsA)
+
+    if 'A' in matrix[height - 1] or 'B' in matrix[0]:
+        return dh2(positionsA)
+
+    # v = utility = +infinity
+    # v = float('+inf')
+    v = -1000000  # 2**20
+    actions = getActions('A', positionsA)
+
+    # for each action in the world state,
+    # result = world state after action
+    # v = min(v, maxVal(result))
+    for x, y in positionsA:
+        for action in actions:
+            result = copy.deepcopy(matrix)
+            newPositionsA = copy.deepcopy(positionsA)
+            newPositionsB = copy.deepcopy(positionsB)
+
+            if action == 'right':
+                if x + 1 < height and y + 1 < width:
+                    if result[x + 1][y + 1] == '_':
+                        newPositionsA.remove((x, y))
+                        newPositionsA.append((x + 1, y + 1))
+                        result[x][y] = '_'
+                        result[x + 1][y + 1] = 'A'
+                        nodesExpdA += 1
+                    elif result[x + 1][y + 1] == 'B':
+                        newPositionsB.remove((x + 1, y + 1))
+                        newPositionsA.remove((x, y))
+                        newPositionsA.append((x + 1, y + 1))
+                        result[x][y] = '_'
+                        result[x + 1][y + 1] = 'A'
+                        nodesExpdA += 1
+                    else:
+                        continue
+                else:
+                    continue
+            elif action == 'down':
+                if x + 1 < height:
+                    if result[x + 1][y] == '_':
+                        newPositionsA.remove((x, y))
+                        newPositionsA.append((x + 1, y))
+                        result[x][y] = '_'
+                        result[x + 1][y] = 'A'
+                        nodesExpdA += 1
+                    else:
+                        continue
+                else:
+                    continue
+            elif action == 'left':
+                if x + 1 < height and y - 1 >= 0:
+                    if result[x + 1][y - 1] == '_':
+                        newPositionsA.remove((x, y))
+                        newPositionsA.append((x + 1, y - 1))
+                        result[x][y] = '_'
+                        result[x + 1][y - 1] = 'A'
+                        nodesExpdA += 1
+                    elif result[x + 1][y - 1] == 'B':
+                        newPositionsB.remove((x + 1, y - 1))
+                        newPositionsA.remove((x, y))
+                        newPositionsA.append((x + 1, y - 1))
+                        result[x][y] = '_'
+                        result[x + 1][y - 1] = 'A'
+                        nodesExpdA += 1
+                    else:
+                        continue
+                else:
+                    continue
+
+            if (depth - 1) < 4:
+                val = minValAB_A(result, depth + 1, newPositionsA, newPositionsB, alpha, beta)
+            else:
+                # newDepth = depth
+                # val = randint(1, 10)
+                val = dh2(newPositionsA)
+
+            # choose the move with the max value
+            if val > v:
+                v = val
+            if v >= beta:
+                return v
+            if v > alpha:
+                alpha = v
+
+    return v  # newDepth
+
+
+# returns a utility value for MIN
+def minValAB_A(matrix, depth, positionsA, positionsB, alpha, beta):
+    global nodesExpdA
+
+    # if state is a terminal state, then return the utility at that state
+    # if depth == 3:
+    #     return
+
+    if len(positionsA) == 0 or len(positionsB) == 0 or (depth - 1) == 3:
+        return dh2(positionsA)
+
+    if 'A' in matrix[height - 1] or 'B' in matrix[0]:
+        return dh2(positionsA)
+
+    # v = utility = -infinity
+    # v = float('-inf')
+    v = 1000000  # -1 * (2**20)
+    actions = getActions('B', positionsB)
+
+    # for each action in the world state,
+    # result = world state after action
+    # v = max(v, minVal(result))
+    for x, y in positionsB:
+        for action in actions:
+            result = copy.deepcopy(matrix)
+            newPositionsA = copy.deepcopy(positionsA)
+            newPositionsB = copy.deepcopy(positionsB)
+
+            if action == 'right':
+                if x - 1 >= 0 and y + 1 < width:
+                    if result[x - 1][y + 1] == '_':
+                        newPositionsB.remove((x, y))
+                        newPositionsB.append((x - 1, y + 1))
+                        result[x][y] = '_'
+                        result[x - 1][y + 1] = 'B'
+                        nodesExpdA += 1
+                    elif result[x - 1][y + 1] == 'A':
+                        newPositionsA.remove((x - 1, y + 1))
+                        newPositionsB.remove((x, y))
+                        newPositionsB.append((x - 1, y + 1))
+                        result[x][y] = '_'
+                        result[x - 1][y + 1] = 'B'
+                        nodesExpdA += 1
+                    else:
+                        continue
+                else:
+                    continue
+            elif action == 'up':
+                if x - 1 >= 0:
+                    if result[x - 1][y] == '_':
+                        newPositionsB.remove((x, y))
+                        newPositionsB.append((x - 1, y))
+                        result[x][y] = '_'
+                        result[x - 1][y] = 'B'
+                        nodesExpdA += 1
+                    else:
+                        continue
+                else:
+                    continue
+            elif action == 'left':
+                if x - 1 >= 0 and y - 1 >= 0:
+                    if result[x - 1][y - 1] == '_':
+                        newPositionsB.remove((x, y))
+                        newPositionsB.append((x - 1, y - 1))
+                        result[x][y] = '_'
+                        result[x - 1][y - 1] = 'B'
+                        nodesExpdA += 1
+                    elif result[x - 1][y - 1] == 'A':
+                        newPositionsA.remove((x - 1, y - 1))
+                        newPositionsB.remove((x, y))
+                        newPositionsB.append((x - 1, y - 1))
+                        result[x][y] = '_'
+                        result[x - 1][y - 1] = 'B'
+                        nodesExpdA += 1
+                    else:
+                        continue
+                else:
+                    continue
+
+            if (depth - 1) < 4:
+                val = maxValAB_A(result, depth + 1, newPositionsA,
+                               newPositionsB, alpha, beta)
+            else:
+                # newDepth = depth
+                # val = randint(1, 10)
+                val = dh2(newPositionsA)
+
+            # choose the move with the min value
+            if val < v:
+                v = val
+            if v <= alpha:
+                return v
+            if v < beta:
+                beta = v
+
+    return v  # , newDepth
+
+
+# returns an action arg max_(a in ACTIONS(state)) minVal(result(state, a))
+def alphaBetaSearchA(matrix, depth, positionsA, positionsB):
+    global nodesExpdA
+    player = 'A'
+    v = -1000000
+
+    actions = getActions(player, positionsA)
+
+    # for each action in the world state,
+    # result = world state after action
+    # v = maxVal(result)
+    for x, y in positionsA:
+        for action in actions:
+            result = copy.deepcopy(matrix)
+            newPositionsA = copy.deepcopy(positionsA)
+            newPositionsB = copy.deepcopy(positionsB)
+
+            if action == 'right':
+                if x + 1 < height and y + 1 < width:
+                    if result[x + 1][y + 1] == '_':
+                        newPositionsA.remove((x, y))
+                        newPositionsA.append((x + 1, y + 1))
+                        result[x][y] = '_'
+                        result[x + 1][y + 1] = 'A'
+                        nodesExpdA += 1
+                    elif result[x + 1][y + 1] == 'B':
+                        newPositionsB.remove((x + 1, y + 1))
+                        newPositionsA.remove((x, y))
+                        newPositionsA.append((x + 1, y + 1))
+                        result[x][y] = '_'
+                        result[x + 1][y + 1] = 'A'
+                        nodesExpdA += 1
+                    else:
+                        continue
+                else:
+                    continue
+            elif action == 'down':
+                if x + 1 < height:
+                    if result[x + 1][y] == '_':
+                        newPositionsA.remove((x, y))
+                        newPositionsA.append((x + 1, y))
+                        result[x][y] = '_'
+                        result[x + 1][y] = 'A'
+                        nodesExpdA += 1
+                    else:
+                        continue
+                else:
+                    continue
+            elif action == 'left':
+                if x + 1 < height and y - 1 >= 0:
+                    if result[x + 1][y - 1] == '_':
+                        newPositionsA.remove((x, y))
+                        newPositionsA.append((x + 1, y - 1))
+                        result[x][y] = '_'
+                        result[x + 1][y - 1] = 'A'
+                        nodesExpdA += 1
+                    elif result[x + 1][y - 1] == 'B':
+                        newPositionsB.remove((x + 1, y - 1))
+                        newPositionsA.remove((x, y))
+                        newPositionsA.append((x + 1, y - 1))
+                        result[x][y] = '_'
+                        result[x + 1][y - 1] = 'A'
+                        nodesExpdA += 1
+                    else:
+                        continue
+                else:
+                    continue
+
+            val = maxValAB_A(result, depth + 1, newPositionsA, newPositionsB, -1000000, 1000000)
 
             # choose the move with the max value
             if val >= v:
@@ -693,7 +1026,7 @@ def main():
         if turn == 0:
             # player A's turn
             timeA = time()
-            action, (x, y) = minimaxSearch(matrix, depth, posA, posB)
+            action, (x, y) = alphaBetaSearchA(matrix, depth, posA, posB) # minimaxSearch(matrix, depth, posA, posB)
             if action == 'right':
                 matrix[x][y] = '_'
                 matrix[x + 1][y + 1] = 'A'
