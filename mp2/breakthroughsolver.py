@@ -4,18 +4,182 @@ from time import time
 from random import sample, randint, random
 from Queue import PriorityQueue
 import copy
-# from alpha_beta_playerA import minValAB_A, maxValAB_A, alphaBetaSearchA
 
 '''
 A 'Breakthrough' simulation using minimax vs. alpha-beta search with various
 move ordering heuristics.
 
 We aim to find:
-    A. The final state of the board and the winning player.: DONE
-    B. The total number of game tree nodes expanded by each player.:
-    C. The avg # nodes expanded per move and avg amount of time per move.:
+    A. The final state of the board and the winning player.
+    B. The total number of game tree nodes expanded by each player.
+    C. The avg # nodes expanded per move and avg amount of time per move.
     D. The # of opponent workers captured by each player, as well as the total #
-       of moves required till the win.:
+       of moves required till the win.
+
+--------------------------------------------------------------------------------
+
+1. OF1 vs. OF1: VS Code terminal 2
+
+Player A wins!
+
+Total number of nodes expanded by player A: 8088570
+Avg number of nodes expanded by player A: 323542
+Avg time per move for player A: 137.92012001
+Number of workers captured by player A: 1
+Number of moves made by player A: 13
+
+Total number of nodes expanded by player B: 1614005
+Avg number of nodes expanded by player B: 64560
+Avg time per move for player B: 25.8980000019
+Number of workers captured by player B: 2
+Number of moves made by player B: 12
+
+['A', '_', 'A', 'A', 'A', 'A', 'A', 'A']
+['_', 'A', 'A', '_', '_', '_', '_', 'A']
+['_', 'A', '_', 'B', 'A', '_', '_', 'A']
+['_', '_', '_', 'B', '_', '_', 'A', '_']
+['_', '_', '_', '_', '_', '_', '_', 'B']
+['_', '_', '_', '_', '_', '_', '_', 'B']
+['_', 'B', 'B', 'B', '_', 'B', '_', '_']
+['B', 'A', '_', 'B', 'B', 'B', 'B', 'B']
+
+--------------------------------------------------------------------------------
+
+2. OF2 vs. DH1: Harsh terminal 1
+
+Player B wins!
+
+Total number of nodes expanded by player A: 3772816
+Avg number of nodes expanded by player A: 37728
+Avg time per move for player A: 9.68248753309
+Number of workers captured by player A: 10
+Number of moves made by player A: 50
+
+Total number of nodes expanded by player B: 6804865
+Avg number of nodes expanded by player B: 68048
+Avg time per move for player B: 17.2183195233
+Number of workers captured by player B: 7
+Number of moves made by player B: 50
+
+['B', '_', '_', '_', '_', '_', '_', '_']
+['_', '_', 'A', '_', '_', '_', 'A', '_']
+['_', '_', '_', '_', '_', '_', '_', 'A']
+['_', '_', '_', '_', '_', '_', '_', 'B']
+['_', '_', 'B', '_', 'B', '_', 'B', '_']
+['_', '_', '_', 'B', 'B', '_', '_', '_']
+['A', '_', 'A', 'B', '_', '_', '_', 'A']
+['B', '_', '_', '_', '_', '_', '_', '_']
+
+--------------------------------------------------------------------------------
+
+3. DH2 vs. OF1: Powershell Desktop 3
+
+Player A wins!
+
+Total number of nodes expanded by player A: 2509357
+Avg number of nodes expanded by player A: 55763
+Avg time per move for player A: 18.1448666467
+Number of workers captured by player A: 2
+Number of moves made by player A: 23
+
+Total number of nodes expanded by player B: 2947741
+Avg number of nodes expanded by player B: 65505
+Avg time per move for player B: 20.2727777693
+Number of workers captured by player B: 5
+Number of moves made by player B: 22
+
+['A', 'A', '_', 'A', 'A', 'A', 'A', '_']
+['_', 'A', 'A', 'A', '_', '_', '_', '_']
+['_', '_', '_', '_', '_', 'A', '_', '_']
+['_', 'A', '_', '_', '_', 'B', '_', 'A']
+['_', 'B', '_', '_', '_', 'A', '_', 'B']
+['_', '_', '_', '_', '_', '_', 'B', '_']
+['B', 'B', 'B', 'B', '_', '_', '_', '_']
+['B', '_', '_', '_', 'A', '_', 'B', 'B']
+
+--------------------------------------------------------------------------------
+
+4. OF2 vs. OF1: Harsh terminal 2
+
+Player B wins!
+
+Total number of nodes expanded by player A: 5750919
+Avg number of nodes expanded by player A: 56381
+Avg time per move for player A: 14.1177772447
+Number of workers captured by player A: 4
+Number of moves made by player A: 51
+
+Total number of nodes expanded by player B: 4161943
+Avg number of nodes expanded by player B: 40803
+Avg time per move for player B: 11.1679261759
+Number of workers captured by player B: 13
+Number of moves made by player B: 51
+
+['A', 'A', 'B', 'A', '_', '_', '_', '_']
+['_', '_', '_', '_', '_', 'B', '_', '_']
+['_', '_', '_', '_', 'A', '_', '_', '_']
+['_', '_', '_', '_', '_', '_', '_', '_']
+['B', 'A', '_', '_', '_', '_', '_', '_']
+['_', '_', '_', '_', '_', '_', '_', 'A']
+['A', '_', 'A', 'A', 'A', 'A', '_', 'A']
+['_', '_', '_', '_', '_', '_', '_', '_']
+
+--------------------------------------------------------------------------------
+
+5. DH2 vs. DH1: Powershell Desktop 2
+
+Player A wins!
+
+Total number of nodes expanded by player A: 1563926
+Avg number of nodes expanded by player A: 50449
+Avg time per move for player A: 24.8573225467
+Number of workers captured by player A: 0
+Number of moves made by player A: 16
+
+Total number of nodes expanded by player B: 2185401
+Avg number of nodes expanded by player B: 70496
+Avg time per move for player B: 32.6110967436
+Number of workers captured by player B: 0
+Number of moves made by player B: 15
+
+['A', 'A', '_', 'A', '_', 'A', '_', 'A']
+['_', 'A', '_', 'A', 'A', 'A', '_', 'A']
+['_', '_', 'A', 'A', '_', '_', 'A', '_']
+['A', '_', '_', '_', 'A', '_', 'B', '_']
+['B', '_', '_', '_', 'B', '_', '_', 'B']
+['_', 'B', '_', 'B', '_', '_', '_', 'B']
+['B', 'B', '_', '_', 'B', '_', '_', 'B']
+['_', 'B', 'B', 'B', 'B', '_', 'A', 'B']
+
+--------------------------------------------------------------------------------
+
+6. OF2 vs. DH2: Powershell Desktop 3
+
+Player B wins!
+
+Total number of nodes expanded by player A: 4153423
+Avg number of nodes expanded by player A: 27325
+Avg time per move for player A: 8.96412500582
+Number of workers captured by player A: 7
+Number of moves made by player A: 76
+
+Total number of nodes expanded by player B: 5427624
+Avg number of nodes expanded by player B: 35708
+Avg time per move for player B: 11.2609342039
+Number of workers captured by player B: 12
+Number of moves made by player B: 76
+
+['_', '_', '_', 'B', '_', '_', '_', '_']
+['B', '_', '_', '_', '_', '_', 'B', 'B']
+['_', '_', '_', '_', '_', '_', '_', '_']
+['_', '_', '_', '_', '_', 'A', '_', '_']
+['_', '_', '_', '_', '_', '_', '_', '_']
+['_', '_', '_', 'A', '_', '_', '_', '_']
+['A', 'A', 'A', 'A', 'A', 'A', '_', 'A']
+['_', '_', '_', '_', '_', '_', '_', '_']
+
+--------------------------------------------------------------------------------
+
 
 Authors:                                  Mihir Sherlekar, Harsh Modhera, Ben Li
 Revised:                                  10/30/2017
@@ -122,10 +286,10 @@ def maxVal(matrix, depth, positionsA, positionsB):
     #     return
 
     if len(positionsA) == 0 or len(positionsB) == 0 or (depth - 1) == 3:
-        return dh1(positionsA)
+        return of1(positionsA)
 
     if 'A' in matrix[height - 1] or 'B' in matrix[0]:
-        return dh1(positionsA)
+        return of1(positionsA)
 
     # v = utility = -infinity
     # v = float('-inf')
@@ -198,7 +362,7 @@ def maxVal(matrix, depth, positionsA, positionsB):
             else:
                 # newDepth = depth
                 # val = randint(1, 10)
-                val = dh1(newPositionsA)
+                val = of1(newPositionsA)
 
             # choose the move with the max value
             if val > v:
@@ -216,10 +380,10 @@ def minVal(matrix, depth, positionsA, positionsB):
     # print depth
 
     if len(positionsA) == 0 or len(positionsB) == 0 or (depth - 1) == 3:
-        return dh1(positionsA)
+        return of1(positionsA)
 
     if 'A' in matrix[height - 1] or 'B' in matrix[0]:
-        return dh1(positionsA)
+        return of1(positionsA)
 
     # if either positionsA or positionsB are empty, then return heuristic val
 
@@ -294,7 +458,7 @@ def minVal(matrix, depth, positionsA, positionsB):
             else:
                 # newDepth = depth
                 # val = randint(1, 10)
-                val = dh1(newPositionsA)
+                val = of1(newPositionsA)
 
             # choose the move with the min value
             if val < v:
@@ -402,10 +566,10 @@ def minValAB(matrix, depth, positionsA, positionsB, alpha, beta):
     #     return
 
     if len(positionsA) == 0 or len(positionsB) == 0 or (depth - 1) == 3:
-        return of1(positionsB)
+        return dh2(positionsB)
 
     if 'A' in matrix[height - 1] or 'B' in matrix[0]:
-        return of1(positionsB)
+        return dh2(positionsB)
 
     # v = utility = +infinity
     # v = float('+inf')
@@ -477,7 +641,7 @@ def minValAB(matrix, depth, positionsA, positionsB, alpha, beta):
             else:
                 # newDepth = depth
                 # val = randint(1, 10)
-                val = of1(newPositionsB)
+                val = dh2(newPositionsB)
 
             # choose the move with the min value
             if val < v:
@@ -498,10 +662,10 @@ def maxValAB(matrix, depth, positionsA, positionsB, alpha, beta):
     #     return
 
     if len(positionsA) == 0 or len(positionsB) == 0 or (depth - 1) == 3:
-        return of1(positionsB)
+        return dh2(positionsB)
 
     if 'A' in matrix[height - 1] or 'B' in matrix[0]:
-        return of1(positionsB)
+        return dh2(positionsB)
 
     # v = utility = -infinity
     # v = float('-inf')
@@ -573,7 +737,7 @@ def maxValAB(matrix, depth, positionsA, positionsB, alpha, beta):
             else:
                 # newDepth = depth
                 # val = randint(1, 10)
-                val = of1(newPositionsB)
+                val = dh2(newPositionsB)
 
             # choose the move with the min value
             if val > v:
@@ -675,10 +839,10 @@ def maxValAB_A(matrix, depth, positionsA, positionsB, alpha, beta):
     #     return
 
     if len(positionsA) == 0 or len(positionsB) == 0 or (depth - 1) == 3:
-        return dh2(positionsA)
+        return of2(positionsA)
 
     if 'A' in matrix[height - 1] or 'B' in matrix[0]:
-        return dh2(positionsA)
+        return of2(positionsA)
 
     # v = utility = +infinity
     # v = float('+inf')
@@ -750,7 +914,7 @@ def maxValAB_A(matrix, depth, positionsA, positionsB, alpha, beta):
             else:
                 # newDepth = depth
                 # val = randint(1, 10)
-                val = dh2(newPositionsA)
+                val = of2(newPositionsA)
 
             # choose the move with the max value
             if val > v:
@@ -772,10 +936,10 @@ def minValAB_A(matrix, depth, positionsA, positionsB, alpha, beta):
     #     return
 
     if len(positionsA) == 0 or len(positionsB) == 0 or (depth - 1) == 3:
-        return dh2(positionsA)
+        return of2(positionsA)
 
     if 'A' in matrix[height - 1] or 'B' in matrix[0]:
-        return dh2(positionsA)
+        return of2(positionsA)
 
     # v = utility = -infinity
     # v = float('-inf')
@@ -848,7 +1012,7 @@ def minValAB_A(matrix, depth, positionsA, positionsB, alpha, beta):
             else:
                 # newDepth = depth
                 # val = randint(1, 10)
-                val = dh2(newPositionsA)
+                val = of2(newPositionsA)
 
             # choose the move with the min value
             if val < v:
@@ -1026,7 +1190,8 @@ def main():
         if turn == 0:
             # player A's turn
             timeA = time()
-            action, (x, y) = alphaBetaSearchA(matrix, depth, posA, posB) # minimaxSearch(matrix, depth, posA, posB)
+            action, (x, y) = alphaBetaSearchA(matrix, depth, posA, posB)
+            # action, (x, y) = minimaxSearch(matrix, depth, posA, posB)
             if action == 'right':
                 matrix[x][y] = '_'
                 matrix[x + 1][y + 1] = 'A'
