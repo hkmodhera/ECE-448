@@ -3,7 +3,7 @@ import linecache as lnc
 import math, os, sys
 
 ### constants
-SMOOTH_CONSTANT = 0.1   # can be any value in range 0.1 and 10, but the higher the better
+SMOOTH_CONSTANT = 5   # can be any value in range 0.1 and 10, but the higher the better
 FEAT_VALUES = 2         # f in {0,1}
 SAMP_WIDTH = 10
 SAMP_HEIGHT = 25
@@ -328,5 +328,5 @@ def extra_credit():
     print confusion_matrix
 
 # only run one of these at a time
-#main()
-extra_credit()
+main()
+#extra_credit()
