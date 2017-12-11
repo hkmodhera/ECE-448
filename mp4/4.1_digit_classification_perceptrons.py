@@ -21,8 +21,8 @@ test_labels_fpath = digit_data_dpath + 'testlabels.txt'
 ### GLOBAL DATA STRUCTURES ###
 weight_vectors = map(np.matrix, [ [[random.uniform(0.0, 1.0)]*IMG_HEIGHT for _ in range(IMG_WIDTH)] ]*NUM_CLASSES)
 dot_product = [0.0]*NUM_CLASSES    # temporary storage for digit classes 0-9 for each input img
-class_train_ct = [0]*NUM_CLASSES       # for digit classes 0-9
-class_guess = [None]*NUM_TESTING_EXEMPLARS
+class_test_ct = [0]*NUM_CLASSES       # for digit classes 0-9
+test_guess = [None]*NUM_TESTING_EXEMPLARS
 classification_rate = [0.0]*NUM_CLASSES
 confusion_matrix = np.matrix([[0.0]*NUM_CLASSES for _ in range(NUM_CLASSES)])    # careful not to bamboozle yourself
 
@@ -84,33 +84,11 @@ def main():
                     if row_data[col_idx] == '+' or row_data[col_idx] == '#':
                         test_img_fvals[row_idx, col_idx] = 1
 
-            # figuring out the likelihood that each image belongs to a certain class
-            for class_no in range(len(class_train_ct)):
-                class_matrix = likelihood_matrices[class_no]
+            for class_digit in range(NUM_CLASSES):
+                # dot_product[class_digit] = np.dot(weight_vectors[class_digit].A1, train_img_fvals.A1)
+                dot_product[class_digit] = np.dot(weight_vectors[class_digit].A1, test_img_fvals.A1)
 
-                # to avoid underflow, we work with the log of P(class)*P(f_{1,1}|class)*...*P(f_{28,28}|class)
-                posterior_prob = math.log(class_priors[class_no])
-
-                # calculate log P(class)+log P(f_{1,1}|class)+log P(f_{1,2}|class)+...+log P(f_{28,28}|class)
-                for row_idx in range(IMG_HEIGHT):
-                    for col_idx in range(IMG_WIDTH):
-                        if test_img_fvals[row_idx, col_idx] == 1:
-                            posterior_prob += math.log(class_matrix[row_idx, col_idx])
-                        else:
-                            posterior_prob += math.log(1 - class_matrix[row_idx, col_idx])
-
-                # save the MAP prob for each class, determine test label guess based on argmax of values in array
-                class_MAP[class_no] = posterior_prob
-
-                # update the most and least "prototypical" instances of each digit class
-                class_min_prob, min_idx, class_max_prob, max_idx = prototypical_img_loc[class_no]
-                if posterior_prob < class_min_prob:
-                    prototypical_img_loc[class_no] = (posterior_prob, nth_img, class_max_prob, max_idx)
-                if posterior_prob > class_max_prob:
-                    prototypical_img_loc[class_no] = (class_min_prob, min_idx, posterior_prob, nth_img)
-
-            # closely matching test images have MAP ~1.0, which corresponds to (-) near 0 while MAP ~0 -> (-inf)
-            class_guess[nth_img] = class_MAP.index(max(class_MAP))
+            test_guess[nth_img] = dot_product.index(max(dot_product))
 
     ### EVALUATION ###
     with open(test_labels_fpath, 'r') as test_labels:
