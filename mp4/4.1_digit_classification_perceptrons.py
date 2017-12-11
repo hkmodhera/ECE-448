@@ -43,7 +43,7 @@ confusion_matrix = np.matrix([[0.0]*NUM_CLASSES for _ in range(NUM_CLASSES)])   
 def main():
     ### TRAINING
     # cycle through training examples in multiple passes/epochs
-    for epoch in range(25):
+    for epoch in range(5):
         with open(train_data_fpath, 'r') as train_images, open(train_labels_fpath, 'r') as train_labels:
             # weights initialized originally as matrix of zeros
             for class_lbl in train_labels:
@@ -99,17 +99,26 @@ def main():
             class_test_ct[actual_class] += 1
             confusion_matrix[actual_class, test_guess[nth_lbl]] += 1
 
+    classification_rate_avg = 0.0
     for idx in range(len(classification_rate)):
         # calculate the percentage of all test images of a given digit correctly classified
         classification_rate[idx] /= float(class_test_ct[idx])
+        classification_rate_avg += classification_rate[idx]
 
         # entry in row r and column c is the percentage of test images from class r that are classified as class c
         for confusion_col in range(len(class_test_ct)):
             confusion_matrix[idx, confusion_col] /= float(class_test_ct[idx])
 
+    classification_rate_avg /= len(classification_rate)
+
     # TO PRINT FOR REPORT, UNCOMMENT THESE:
     np.set_printoptions(precision=3)
-    print classification_rate
+
+    print 'The classification rate matrix is as follows:\n'
+    print classification_rate, '\n'
+    print 'The classification rate average is as follows: ' + str(classification_rate_avg) + '\n'
+
+    print 'The confusion matrix is as follows:\n'
     print confusion_matrix
 
 if __name__ == "__main__":
