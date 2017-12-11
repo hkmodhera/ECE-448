@@ -2,91 +2,77 @@ import os.path as osp
 import numpy as np
 import linecache as lnc
 import math
+import random
 
-# CONSTANTS
-SMOOTH_CONSTANT = 1.0   # can be any value in range 0.1 and 10, but the higher the better
-FEAT_VALUES = 2          # f in {0,1}
+### CONSTANTS ###
 IMG_WIDTH = 28
 IMG_HEIGHT = 28
 NUM_CLASSES = 10
 NUM_TRAINING_EXEMPLARS = 5000
 NUM_TESTING_EXEMPLARS = 1000
 
-# PATH VARIABLES
+### PATH VARIABLES ###
 digit_data_dpath = osp.dirname(__file__) + 'digitdata/'
 train_data_fpath = digit_data_dpath + 'trainingimages.txt'
 train_labels_fpath = digit_data_dpath + 'traininglabels.txt'
 test_data_fpath = digit_data_dpath + 'testimages.txt'
 test_labels_fpath = digit_data_dpath + 'testlabels.txt'
 
-# GLOBAL DATA STRUCTURES
+### GLOBAL DATA STRUCTURES ###
+weight_vectors = map(np.matrix, [ [[random.uniform(0.0, 1.0)]*IMG_HEIGHT for _ in range(IMG_WIDTH)] ]*NUM_CLASSES)
+dot_product = [0.0]*NUM_CLASSES    # temporary storage for digit classes 0-9 for each input img
 class_train_ct = [0]*NUM_CLASSES       # for digit classes 0-9
-class_priors = [0.0]*NUM_CLASSES       # (float) P(class)
-weight_vectors = map(np.matrix, [ [[0.0]*IMG_HEIGHT for _ in range(IMG_WIDTH)] ]*NUM_CLASSES)
-# P(F_{ij} = f | class)
+class_guess = [None]*NUM_TESTING_EXEMPLARS
+classification_rate = [0.0]*NUM_CLASSES
+confusion_matrix = np.matrix([[0.0]*NUM_CLASSES for _ in range(NUM_CLASSES)])    # careful not to bamboozle yourself
 
 ### HELPER FUNCTIONS ###
-def compute_likelihood():
-    # cycle through training examples in multiple passes/epochs
-    # for each training example
-    #   classify with current weights: y' = sgn(w * x)
-    #   if classification incorrect, update weights: w ← w +α (y − y') x
-    #       α is a learning rate that should decay as a function of epoch t
-    #       e.g., 1000/(1000+t)
-
-
-    # go through the features' counts and calculate their likelihood wrt each class with Laplace smoothing
-    for class_index in range(len(class_train_ct)):
-        likelihood_matrices[class_index] = (likelihood_matrices[class_index] + SMOOTH_CONSTANT) / float(class_train_ct[class_index] + FEAT_VALUES*SMOOTH_CONSTANT)
-
-    # compute priors
-    for class_index in range(len(class_train_ct)):
-        class_priors[class_index] = class_train_ct[class_index] / float(NUM_TRAINING_EXEMPLARS)
-
-def print_highest_lowest_MAP_images():
-    for digit in range(len(prototypical_img_loc)):
-        _, min_MAP_img_idx, _, max_MAP_img_idx = prototypical_img_loc[digit]
-
-        print 'Test example with lowest posterior probability for class %d:' % digit
-        for line_no in range(min_MAP_img_idx*IMG_HEIGHT, (min_MAP_img_idx + 1)*IMG_HEIGHT):
-            print lnc.getline(test_data_fpath, line_no).strip('\n')
-
-        print 'Test example with highest posterior probability for class %d:' % digit
-        for line_no in range(max_MAP_img_idx*IMG_HEIGHT, (max_MAP_img_idx + 1)*IMG_HEIGHT):
-            print lnc.getline(test_data_fpath, line_no).strip('\n')
-
-def updateWeights():
-    return
-
+# def print_highest_lowest_MAP_images():
+#     for digit in range(len(prototypical_img_loc)):
+#         _, min_MAP_img_idx, _, max_MAP_img_idx = prototypical_img_loc[digit]
+#
+#         print 'Test example with lowest posterior probability for class %d:' % digit
+#         for line_no in range(min_MAP_img_idx*IMG_HEIGHT, (min_MAP_img_idx + 1)*IMG_HEIGHT):
+#             print lnc.getline(test_data_fpath, line_no).strip('\n')
+#
+#         print 'Test example with highest posterior probability for class %d:' % digit
+#         for line_no in range(max_MAP_img_idx*IMG_HEIGHT, (max_MAP_img_idx + 1)*IMG_HEIGHT):
+#             print lnc.getline(test_data_fpath, line_no).strip('\n')
 
 ### MAIN ###
 def main():
     ### TRAINING
-    with open(train_data_fpath, 'r') as train_images, open(train_labels_fpath, 'r') as train_labels:
-        # init weights
-        for class_lbl in train_labels:
-            class_num = int(class_lbl)
+    # cycle through training examples in multiple passes/epochs
+    for epoch in range(10):
+        with open(train_data_fpath, 'r') as train_images, open(train_labels_fpath, 'r') as train_labels:
+            # weights initialized originally as matrix of zeros
+            for class_lbl in train_labels:
+                class_num = int(class_lbl)
 
-            # compute the feature values for this example training image
-            train_img_fvals = np.matrix([[0]*IMG_HEIGHT for _ in range(IMG_WIDTH)])
-            for row_idx in range(IMG_HEIGHT):
-                row_data = train_images.readline()
-                for col_idx in range(IMG_WIDTH):
-                    if row_data[col_idx] == '+' or row_data[col_idx] == '#':
-                        train_img_fvals[row_idx, col_idx] = 1
-                    # else, feature value remains 0 for background pixel
+                # compute the feature values for this example training image
+                train_img_fvals = np.matrix([[0]*IMG_HEIGHT for _ in range(IMG_WIDTH)])
+                for row_idx in range(IMG_HEIGHT):
+                    row_data = train_images.readline()
+                    for col_idx in range(IMG_WIDTH):
+                        if row_data[col_idx] == '+' or row_data[col_idx] == '#':
+                            train_img_fvals[row_idx, col_idx] = 1
+                        # else, feature value remains 0 for background pixel
 
-            # accumulate feat val for each pixel of this class' global data storage structure
+                # dot product of train_img_fvals with all 0-9 weight vectors
+                for class_digit in range(NUM_CLASSES):
+                    # dot_product[class_digit] = np.dot(weight_vectors[class_digit].A1, train_img_fvals.A1)
+                    dot_product[class_digit] = np.dot(weight_vectors[class_digit].A1, train_img_fvals.A1)
 
-            likelihood_matrices[class_num] += train_img_fvals
-            class_train_ct[class_num] += 1
+                # get the digit classification via the index of the argmax of this array
+                digit_guess = dot_product.index(max(dot_product))
 
-    # compute_likelihood()
+                # compare prediction with class label & update if classification is incorrect
+                if digit_guess != class_num:
+                    weight_vectors[class_num] = weight_vectors[class_num] + (1/(epoch+1))*train_img_fvals
+                    weight_vectors[digit_guess] = weight_vectors[digit_guess] - (1/(epoch+1))*train_img_fvals
 
-    '''
     ### TESTING ###
     with open(test_data_fpath, 'r') as test_images:
-
         for nth_img in range(NUM_TESTING_EXEMPLARS):
             class_MAP = [None]*NUM_CLASSES
 
@@ -149,44 +135,6 @@ def main():
     np.set_printoptions(precision=3)
     print classification_rate
     print confusion_matrix
-    print_highest_lowest_MAP_images()
 
-    def print_odds(matrix):
-        for row_idx in range(IMG_HEIGHT):
-            for col_idx in range(IMG_WIDTH):
-                temp = math.log(matrix[row_idx, col_idx])
-                if temp > -0.75 and temp < 1.25: print ' ',
-                elif temp > 0: print '+',
-                else: print '-',
-            print ''
-
-    def print_class(matrix):
-        for row_idx in range(IMG_HEIGHT):
-            for col_idx in range(IMG_WIDTH):
-                temp = math.log(matrix[row_idx, col_idx])
-                if temp > -1.1 and temp < -0.9: print ' ',
-                elif temp > -1: print '+',
-                else: print '-',
-            print ''
-
-    ### ODDS RATIO ###
-    most_confusing_indices = get_confusing_idx(confusion_matrix)
-
-    # for each pair of the 4 chosen pairs with highest confusion probability
-    for c1, c2 in most_confusing_indices:
-        class_1 = likelihood_matrices[c1]
-        class_2 = likelihood_matrices[c2]
-        class_odds = np.matrix([[0.0]*IMG_HEIGHT for _ in range(IMG_WIDTH)])
-        for row_idx in range(IMG_HEIGHT):
-            for col_idx in range(IMG_WIDTH):
-                class_odds[row_idx, col_idx] = class_1[row_idx, col_idx]/class_2[row_idx, col_idx]
-
-        print c1, c2
-        print_class(class_1)
-        print '\n'
-        print_class(class_2)
-        print '\n'
-        print_odds(class_odds)
-        print '\n'
-
-    '''
+if __name__ == "__main__":
+    main()
