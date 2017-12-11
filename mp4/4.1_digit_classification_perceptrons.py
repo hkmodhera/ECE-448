@@ -43,7 +43,7 @@ confusion_matrix = np.matrix([[0.0]*NUM_CLASSES for _ in range(NUM_CLASSES)])   
 def main():
     ### TRAINING
     # cycle through training examples in multiple passes/epochs
-    for epoch in range(10):
+    for epoch in range(25):
         with open(train_data_fpath, 'r') as train_images, open(train_labels_fpath, 'r') as train_labels:
             # weights initialized originally as matrix of zeros
             for class_lbl in train_labels:
