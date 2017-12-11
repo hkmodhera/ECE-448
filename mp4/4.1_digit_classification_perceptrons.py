@@ -20,7 +20,7 @@ test_labels_fpath = digit_data_dpath + 'testlabels.txt'
 
 ### GLOBAL DATA STRUCTURES ###
 weight_vectors = map(np.matrix, [ [[random.uniform(0.0, 1.0)]*IMG_HEIGHT for _ in range(IMG_WIDTH)] ]*NUM_CLASSES)
-dot_product = [0.0]*NUM_CLASSES    # temporary storage for digit classes 0-9 for each input img
+dot_product = [0.0]*NUM_CLASSES       # temporary storage for digit classes 0-9 for each input img
 class_test_ct = [0]*NUM_CLASSES       # for digit classes 0-9
 test_guess = [None]*NUM_TESTING_EXEMPLARS
 classification_rate = [0.0]*NUM_CLASSES
@@ -99,7 +99,7 @@ def main():
                 classification_rate[actual_class] += 1
 
             class_test_ct[actual_class] += 1
-            confusion_matrix[actual_class, class_guess[nth_lbl]] += 1
+            confusion_matrix[actual_class, test_guess[nth_lbl]] += 1
 
     for idx in range(len(classification_rate)):
         # calculate the percentage of all test images of a given digit correctly classified
