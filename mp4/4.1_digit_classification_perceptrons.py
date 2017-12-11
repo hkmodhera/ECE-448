@@ -74,8 +74,6 @@ def main():
     ### TESTING ###
     with open(test_data_fpath, 'r') as test_images:
         for nth_img in range(NUM_TESTING_EXEMPLARS):
-            class_MAP = [None]*NUM_CLASSES
-
             # grab pixel data -> features from this test image
             test_img_fvals = np.matrix([[0]*IMG_HEIGHT for _ in range(IMG_WIDTH)])
             for row_idx in range(IMG_HEIGHT):
@@ -95,7 +93,7 @@ def main():
         for nth_lbl in range(NUM_TESTING_EXEMPLARS):
             actual_class = int(test_labels.readline())
 
-            if actual_class == class_guess[nth_lbl]:
+            if actual_class == test_guess[nth_lbl]:
                 classification_rate[actual_class] += 1
 
             class_test_ct[actual_class] += 1
