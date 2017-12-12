@@ -2,10 +2,10 @@ import numpy as np
 import sys
 
 # constants
-NUM_TRAIN_GAMES = 100000
+NUM_TRAIN_GAMES = 50000
 NUM_TEST_GAMES = 1000
 GRID_DIM = (12, 12)     # columns x rows
-ALPHAS_CONST = 1        # the C of the learning rate: C/(C+N(s,a)) in [0,1]
+ALPHAS_CONST = 10000    # the C of the learning rate: C/(C+N(s,a)) in [0,1]
 GAMMA = 0.9             # discount factor in [0,1]
 EPSILON = 0.05          # epsilon-greedy action selection policy
 
@@ -37,7 +37,10 @@ def update_ball():
 
     if ball_x < 0:
         ball_x = -ball_x; velo_x = -velo_x
-    elif ball_x >= 1:
+    #elif ball_x >= 1:
+
+def check_collision():
+    if ball_x >= 1:
         if ball_y >= paddle_y and ball_y <= paddle_y+PADDLE_HEIGHT and ball_x == 1:
             # notice this is after y pos is fully determined; rebound case
             velo_y = velo_y + np.random.uniform(-0.03, np.nextafter(0.03, 1))
@@ -46,7 +49,7 @@ def update_ball():
             # make sure that |velocity_x| > 0.03 and that it moves in opposite direction next
             # also limit velocities to < 1 in magnitude
             if velo_x > -0.03:  velo_x = -0.03
-            elif velo_x < -1:   velo_x = -0.99
+            elif velo_x < -1:   velo_x = -0.95
             if abs(velo_y) > 1:
                 velo_y = 0.95 if velo_y > 0 else -0.95
             return 1
@@ -72,15 +75,16 @@ def move_paddle(action):
         paddle_y = paddle_y + 0.04 if paddle_y + 0.04 <= 1-PADDLE_HEIGHT else 1-PADDLE_HEIGHT
 
 def print_layout():
+    bx, by, _, _, py = discretize_state()
     print '-------------------------------------------------'
     for j in range(GRID_DIM[1]):
         for i in range(GRID_DIM[0]):
-            if i == ball_x and j == ball_y:
-                if i == BALL_X_MAX and j == discretize_paddle_y():
+            if i == bx and j == by:
+                if i == 11 and j == py:
                     print '|oP',
                 else:
                     print '| o',
-            elif i == BALL_X_MAX and j == discretize_paddle_y():
+            elif i == 11 and j == py:
                 print '| P',
             else:
                 print '|  ',
@@ -107,7 +111,11 @@ def main():
             # discretize continuous global vars each step since dict keys is tuple of discretes
             # and save state to update its Q-val after ball update
             pre_state = discretize_state()
-            #print_layout()
+
+            r = check_collision()
+            update_ball()
+
+            post_state = discretize_state() if r != -1 else game_over_state
 
             if np.random.random() < EPSILON:
                 # with a small probability, an action is selected at random
@@ -121,23 +129,22 @@ def main():
                 move_paddle('up')
             elif a == 2:
                 move_paddle('down')
-            r = update_ball()
-            post_state = discretize_state() if r != -1 else game_over_state
 
             # perform TD learning by adjusting original state's Q value
-            ALPHA = ALPHAS_CONST / float(ALPHAS_CONST + Q_sa[pre_state][3 + a])
+            ALPHA = 0.3 #ALPHAS_CONST / float(ALPHAS_CONST + Q_sa[pre_state][3 + a])
             Q_sa[pre_state][a] += ALPHA*(r + GAMMA*max(Q_sa[post_state][:3]) - Q_sa[pre_state][a])
             Q_sa[pre_state][3 + a] += 1     #increment corresponding count N(s,a) after previous formula
 
             # check if we've reached terminal state
             if r == -1:
                 break
+
     # with open('Q_sa.pickle', 'wb') as trained_Q_file:
     #     pickle.dump(Q_sa, trained_Q_file, protocol=pickle.HIGHEST_PROTOCOL)
-    # for k, v in Q_sa.iteritems():
-    #     if sum(v) != 0:
-    #         print k, v
-    # sys.exit(0)
+    for k, v in Q_sa.iteritems():
+        if sum(v) != 0:
+            print k, v
+    #sys.exit(0)
 
     ### TESTING ###
     total_consecutive_rebounds = 0.0
@@ -146,6 +153,8 @@ def main():
         consecutive_rebounds = 0
 
         while True:
+            reward = check_collision()
+            update_ball()
             state = discretize_state()
             best_action = np.argmax(Q_sa[state][:3])    #in {0,1,2}
 
@@ -153,7 +162,6 @@ def main():
                 move_paddle('up')
             elif best_action == 2:
                 move_paddle('down')
-            reward = update_ball()
 
             if reward == -1:
                 total_consecutive_rebounds += consecutive_rebounds
