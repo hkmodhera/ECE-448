@@ -19,25 +19,14 @@ test_data_fpath = digit_data_dpath + 'testimages.txt'
 test_labels_fpath = digit_data_dpath + 'testlabels.txt'
 
 ### GLOBAL DATA STRUCTURES ###
-weight_vectors = map(np.matrix, [ [[random.uniform(0.0, 1.0)]*IMG_HEIGHT for _ in range(IMG_WIDTH)] ]*NUM_CLASSES)
+# weight_vectors = map(np.matrix, [ [[random.uniform(0.0, 1.0)]*IMG_HEIGHT for _ in range(IMG_WIDTH)] ]*NUM_CLASSES)
+weight_vectors = map(np.matrix, [ [[0.0]*IMG_HEIGHT for _ in range(IMG_WIDTH)] ]*NUM_CLASSES)
 dot_product = [0.0]*NUM_CLASSES       # temporary storage for digit classes 0-9 for each input img
 class_test_ct = [0]*NUM_CLASSES       # for digit classes 0-9
 test_guess = [None]*NUM_TESTING_EXEMPLARS
 classification_rate = [0.0]*NUM_CLASSES
 confusion_matrix = np.matrix([[0.0]*NUM_CLASSES for _ in range(NUM_CLASSES)])    # careful not to bamboozle yourself
 
-### HELPER FUNCTIONS ###
-# def print_highest_lowest_MAP_images():
-#     for digit in range(len(prototypical_img_loc)):
-#         _, min_MAP_img_idx, _, max_MAP_img_idx = prototypical_img_loc[digit]
-#
-#         print 'Test example with lowest posterior probability for class %d:' % digit
-#         for line_no in range(min_MAP_img_idx*IMG_HEIGHT, (min_MAP_img_idx + 1)*IMG_HEIGHT):
-#             print lnc.getline(test_data_fpath, line_no).strip('\n')
-#
-#         print 'Test example with highest posterior probability for class %d:' % digit
-#         for line_no in range(max_MAP_img_idx*IMG_HEIGHT, (max_MAP_img_idx + 1)*IMG_HEIGHT):
-#             print lnc.getline(test_data_fpath, line_no).strip('\n')
 
 ### MAIN ###
 def main():
@@ -114,11 +103,9 @@ def main():
     # TO PRINT FOR REPORT, UNCOMMENT THESE:
     np.set_printoptions(precision=3)
 
-    print 'The classification rate matrix is as follows:\n'
-    print classification_rate, '\n'
-    print 'The classification rate average is as follows: ' + str(classification_rate_avg) + '\n'
-
-    print 'The confusion matrix is as follows:\n'
+    print 'The classification rate matrix is as follows: \n{}\n'.format(classification_rate)
+    print 'The classification rate average is as follows: {:.5f}\n'.format(classification_rate_avg)
+    print 'The confusion matrix is as follows:'
     print confusion_matrix
 
 if __name__ == "__main__":
