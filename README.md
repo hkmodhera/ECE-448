@@ -10,17 +10,6 @@ Assigned: September 14, 2017
 
 Due Date: October 2, 2017
 
-Accomplished Tasks:
-	
-	* Initialized the git repository for this course
-	* Wrote out code to parse the maze from an input text file
-
-Remaining Tasks:
-	 
-	* 
-	* 
-
-
 ### MP2
 
 Assigned: October 5, 2017
