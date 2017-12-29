@@ -28,7 +28,6 @@ test_guess = [None]*NUM_TESTING_EXEMPLARS
 classification_rate = [0.0]*NUM_CLASSES
 confusion_matrix = np.matrix([[0.0]*NUM_CLASSES for _ in range(NUM_CLASSES)])    # careful not to bamboozle yourself
 
-
 ### MAIN ###
 def main():
     # random.seed(SEED)

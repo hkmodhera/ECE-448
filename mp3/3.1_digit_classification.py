@@ -38,7 +38,6 @@ classification_rate = [0.0]*NUM_CLASSES
 confusion_matrix = np.matrix([[0.0]*NUM_CLASSES for _ in range(NUM_CLASSES)])    # careful not to bamboozle yourself
 prototypical_img_loc = [ (float('inf'), 0, float('-inf'), 0) ]*NUM_CLASSES    # minMAP, minIdx, maxMAP, maxIdx
 
-
 # For main()
 def compute_likelihood():
     # go through the features' counts and calculate their likelihood wrt each class with Laplace smoothing
@@ -79,7 +78,6 @@ def get_confusing_idx(confusion_matrix):
 
     return most_confusing
 
-
 # For extra_credit()
 def ec_compute_likelihood():
     # go through the features' counts and calculate their likelihood wrt each class with Laplace smoothing
@@ -119,7 +117,6 @@ def ec_get_confusing_idx(confusion_matrix):
         most_confusing.append((x, y))
 
     return most_confusing
-
 
 def main():
     ### TRAINING
@@ -246,7 +243,6 @@ def main():
         print '\n'
         print_odds(class_odds)
         print '\n'
-
 
 # 451 training images
 def extra_credit():
@@ -378,7 +374,6 @@ def extra_credit():
         print '\n'
         print_odds(class_odds)
         print '\n'
-
 
 def run():
     options = [0, 1, 2]

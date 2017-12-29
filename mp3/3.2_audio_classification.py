@@ -239,7 +239,6 @@ def extra_credit():
             for col in range(SAMP_WIDTH):
                 likelihood_matrices_columns[corpus][row, 0] += likelihood_matrices[corpus][row, col]
         likelihood_matrices_columns[corpus] /= SAMP_WIDTH
-    ##################################
 
     compute_likelihood_priors(likelihood_matrices, class_train_ct)
 

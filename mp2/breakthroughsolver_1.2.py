@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import sys, os.path
 from time import time
 from random import sample, randint, random

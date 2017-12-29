@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import sys, os.path, copy, operator
 from random import sample
 from Queue import PriorityQueue
@@ -236,33 +237,6 @@ def main():
             if cell == '_':
                 cellDict[(x,y)] = colors
 
-    #sum = 0
-    #max = 0
-    #iters = 1000
-    #for i in range(iters):
-    #    count = 0
-    #    if dumbBacktracking(matrix, colors, endpts, findNextEmpty(
-    #        matrix), width * height - len(endpts)) == -1:
-    #        print 'No solution to Free Flow puzzle was found!'
-    #    else:
-    #        # print 'num assignments: ' + str(count)
-    #        sum += count
-    #        if count > max: max = count
-
-    # print '\n'.join([''.join([col for col in row]) for row in matrix])
-
-    # initial call to the dumb backtracking
-    
-    #count = 0
-    #if dumbBacktracking(SET PARAMS HERE) == -1:
-    #    print 'No solution to Flow Free puzzle was found!'
-    #else:
-    #    print 'Solution to the Free Flow puzzle\n'
-    #    print '\n'.join([''.join([col for col in row]) for row in matrix])
-    #    print '\nnum assignments: ' + str(count)      
-    
-    # initial call to the smart backtracking
-    
     count = 0
     if smartBacktracking(matrix, cellDict, endpts) is False:
         print 'No solution to Flow Free puzzle was found!'
